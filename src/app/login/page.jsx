@@ -1,18 +1,17 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Zap, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email,     setEmail]     = useState('');
-  const [password,  setPassword]  = useState('');
-  const [showPass,  setShowPass]  = useState(false);
-  const [loading,   setLoading]   = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [email,         setEmail]        = useState('');
+  const [password,      setPassword]     = useState('');
+  const [showPass,      setShowPass]     = useState(false);
+  const [loading,       setLoading]      = useState(false);
+  const [googleLoading, setGoogleLoading]= useState(false);
+  const [focused,       setFocused]      = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,10 +20,12 @@ export default function LoginPage() {
     try {
       await authApi.login({ email, password });
       toast.success('Welcome back!');
-      router.push('/dashboard');
+      // Full page reload so proxy.js reads the fresh httpOnly cookie
+      window.location.href = '/dashboard';
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Login failed');
-    } finally { setLoading(false); }
+      toast.error(err?.response?.data?.message || 'Invalid email or password');
+      setLoading(false);
+    }
   };
 
   const handleGoogle = () => {
@@ -32,21 +33,26 @@ export default function LoginPage() {
     authApi.googleLogin();
   };
 
-  const inputStyle = (focused) => ({
-    width: '100%', padding: '12px 14px 12px 44px',
+  const inputCls = (field) => ({
+    width: '100%',
+    padding: '12px 14px 12px 44px',
     background: 'rgba(255,255,255,0.06)',
-    border: `1px solid ${focused ? '#e8b84b' : 'rgba(255,255,255,0.12)'}`,
-    borderRadius: 12, color: '#ffffff', fontSize: 14,
-    fontFamily: 'DM Sans, sans-serif', outline: 'none',
+    border: `1.5px solid ${focused === field ? '#e8b84b' : 'rgba(255,255,255,0.10)'}`,
+    borderRadius: 12,
+    color: '#ffffff',
+    fontSize: 14,
+    fontFamily: 'Inter, sans-serif',
+    outline: 'none',
     transition: 'all 0.2s ease',
-    boxShadow: focused ? '0 0 0 3px rgba(232,184,75,0.15)' : 'none',
+    boxShadow: focused === field ? '0 0 0 3px rgba(232,184,75,0.15)' : 'none',
   });
-
-  const [focusedField, setFocusedField] = useState('');
 
   return (
     <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       background: '#0d0c0a',
       backgroundImage: 'radial-gradient(ellipse at 20% 50%, rgba(232,184,75,0.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.06) 0%, transparent 60%)',
     }}>
@@ -55,35 +61,23 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <div style={{ width: 52, height: 52, borderRadius: 16, background: 'linear-gradient(135deg,#e8b84b,#b88c2a)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 8px 24px rgba(232,184,75,0.3)' }}>
-            <Zap size={26} color="#0a0a0a" strokeWidth={2.5}/>
+            <Zap size={26} color="#0a0a0a" strokeWidth={2.5} />
           </div>
           <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 28, color: '#ffffff', letterSpacing: '-0.03em', margin: 0 }}>MiniCRM</h1>
-          <p style={{ fontSize: 14, color: '#8a7a65', marginTop: 6 }}>Sign in to your agency dashboard</p>
+          <p style={{ fontSize: 14, color: '#8a7a65', marginTop: 6, fontFamily: 'Inter, sans-serif' }}>Sign in to your agency dashboard</p>
         </div>
 
         {/* Card */}
-        <div style={{
-          background: 'rgba(22,20,16,0.9)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 24, padding: 32,
-          backdropFilter: 'blur(20px)',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
-        }}>
+        <div style={{ background: 'rgba(22,20,16,0.95)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, padding: 32, backdropFilter: 'blur(20px)', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+
           {/* Gold top line */}
-          <div style={{ height: 2, background: 'linear-gradient(90deg,transparent,#e8b84b,transparent)', borderRadius: 99, marginBottom: 28 }}/>
+          <div style={{ height: 2, background: 'linear-gradient(90deg,transparent,#e8b84b,transparent)', borderRadius: 99, marginBottom: 28 }} />
 
           {/* Google button */}
-          <button onClick={handleGoogle} disabled={googleLoading} style={{
-            width: '100%', padding: '12px', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-            color: '#ffffff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-            transition: 'all 0.2s ease', marginBottom: 20, fontFamily: 'DM Sans, sans-serif',
-            opacity: googleLoading ? 0.7 : 1,
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}
-          >
-            {/* Google SVG icon */}
+          <button onClick={handleGoogle} disabled={googleLoading}
+            style={{ width: '100%', padding: '12px', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#ffffff', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', marginBottom: 20, fontFamily: 'Inter, sans-serif', opacity: googleLoading ? 0.7 : 1 }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}>
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -95,60 +89,57 @@ export default function LoginPage() {
 
           {/* Divider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }}/>
-            <span style={{ fontSize: 12, color: '#6a5a48', fontWeight: 500 }}>or sign in with email</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }}/>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+            <span style={{ fontSize: 12, color: '#6a5a48', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>or sign in with email</span>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
           </div>
 
           {/* Form */}
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
             {/* Email */}
             <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: focusedField === 'email' ? '#e8b84b' : '#6a5a48', pointerEvents: 'none', transition: 'color 0.2s' }}/>
+              <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: focused === 'email' ? '#e8b84b' : '#6a5a48', pointerEvents: 'none', transition: 'color 0.2s' }} />
               <input
                 type="email"
                 placeholder="your@email.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                onFocus={() => setFocusedField('email')}
-                onBlur={() => setFocusedField('')}
-                style={inputStyle(focusedField === 'email')}
+                onFocus={() => setFocused('email')}
+                onBlur={() => setFocused('')}
+                style={inputCls('email')}
+                autoComplete="email"
               />
             </div>
 
             {/* Password */}
             <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: focusedField === 'password' ? '#e8b84b' : '#6a5a48', pointerEvents: 'none', transition: 'color 0.2s' }}/>
+              <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: focused === 'password' ? '#e8b84b' : '#6a5a48', pointerEvents: 'none', transition: 'color 0.2s' }} />
               <input
                 type={showPass ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                onFocus={() => setFocusedField('password')}
-                onBlur={() => setFocusedField('')}
-                style={{ ...inputStyle(focusedField === 'password'), paddingRight: 44 }}
+                onFocus={() => setFocused('password')}
+                onBlur={() => setFocused('')}
+                style={{ ...inputCls('password'), paddingRight: 44 }}
+                autoComplete="current-password"
               />
-              <button type="button" onClick={() => setShowPass(s => !s)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#6a5a48', padding: 0, display: 'flex' }}>
-                {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
+              <button type="button" onClick={() => setShowPass(s => !s)}
+                style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#6a5a48', padding: 0, display: 'flex' }}>
+                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
 
             {/* Submit */}
-            <button type="submit" disabled={loading} style={{
-              width: '100%', padding: '13px', borderRadius: 12, marginTop: 4,
-              background: loading ? 'rgba(232,184,75,0.5)' : 'linear-gradient(135deg,#f5cc6a,#e8b84b)',
-              color: '#0a0a0a', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer',
-              fontFamily: 'Syne, sans-serif', letterSpacing: '0.01em',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              transition: 'all 0.2s ease',
-              boxShadow: loading ? 'none' : '0 4px 16px rgba(232,184,75,0.3)',
-            }}>
-              {loading ? 'Signing in…' : <><span>Sign In</span><ArrowRight size={16}/></>}
+            <button type="submit" disabled={loading}
+              style={{ width: '100%', padding: '13px', borderRadius: 12, marginTop: 4, background: loading ? 'rgba(232,184,75,0.5)' : 'linear-gradient(135deg,#f5cc6a,#e8b84b)', color: '#0a0a0a', fontSize: 14, fontWeight: 700, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Syne, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s ease', boxShadow: loading ? 'none' : '0 4px 16px rgba(232,184,75,0.3)' }}>
+              {loading ? 'Signing in…' : <><span>Sign In</span><ArrowRight size={16} /></>}
             </button>
           </form>
 
           {/* Register link */}
-          <p style={{ textAlign: 'center', fontSize: 13, color: '#6a5a48', marginTop: 20 }}>
+          <p style={{ textAlign: 'center', fontSize: 13, color: '#6a5a48', marginTop: 20, fontFamily: 'Inter, sans-serif' }}>
             No account yet?{' '}
             <Link href="/register" style={{ color: '#e8b84b', fontWeight: 600, textDecoration: 'none' }}>
               Create admin account
@@ -156,7 +147,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 12, color: '#4a3a28', marginTop: 24 }}>
+        <p style={{ textAlign: 'center', fontSize: 12, color: '#3a2a18', marginTop: 24, fontFamily: 'Inter, sans-serif' }}>
           MiniCRM Agency Suite · Secure access
         </p>
       </div>
