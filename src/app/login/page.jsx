@@ -13,20 +13,24 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading]= useState(false);
   const [focused,       setFocused]      = useState('');
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (!email || !password) return toast.error('Please fill in all fields');
-    setLoading(true);
-    try {
-      await authApi.login({ email, password });
-      toast.success('Welcome back!');
-      // Full page reload so proxy.js reads the fresh httpOnly cookie
-      window.location.href = '/dashboard';
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Invalid email or password');
-      setLoading(false);
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  if (!email || !password) return toast.error('Please fill in all fields');
+  setLoading(true);
+  try {
+    const res = await authApi.login({ email, password });
+    // Get token from response body and set it as cookie on frontend
+    const token = res.data?.data?.token || res.data?.token;
+    if (token) {
+      document.cookie = `token=${token}; path=/; max-age=${7*24*60*60}; secure; samesite=none`;
     }
-  };
+    toast.success('Welcome back!');
+    window.location.href = '/dashboard';
+  } catch (err) {
+    toast.error(err?.response?.data?.message || 'Invalid email or password');
+    setLoading(false);
+  }
+};
 
   const handleGoogle = () => {
     setGoogleLoading(true);
