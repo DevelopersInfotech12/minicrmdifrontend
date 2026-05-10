@@ -1,15 +1,10 @@
 'use client';
-import { useTheme } from '@/components/layout/ThemeProvider';
 
 export default function PageHeader({ title, subtitle, action }) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
   return (
     <div className="flex items-start justify-between mb-7 animate-fade-up">
       <div>
-        <h1 className={`font-display font-extrabold text-3xl tracking-tight leading-tight
-          ${isDark ? 'text-white' : 'text-gray-700'}`}>
+        <h1 className="font-display font-extrabold text-3xl tracking-tight leading-tight text-gray-700 dark:text-white">
           {title}
         </h1>
         {subtitle && (

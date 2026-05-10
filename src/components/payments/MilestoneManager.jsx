@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { milestoneApi } from '@/lib/api';
+import { milestonesApi } from '@/lib/api';
 import {
   Plus, Trash2, Pencil, CheckCircle2, Clock,
   AlertCircle, Calendar, ChevronDown, ChevronUp, DollarSign

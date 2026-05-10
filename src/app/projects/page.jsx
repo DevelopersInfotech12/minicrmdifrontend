@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { projectsApi } from '@/lib/api';
+import { projectsApi, clientsApi } from '@/lib/api';
 import { FolderKanban, Plus, Search, Pencil, Trash2, Eye, RefreshCw, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -25,8 +25,14 @@ const PRIORITY_CFG = {
   "Retainer":  { bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)', color: '#a78bfa'  },
 };
 
-const fmtD = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-const fmt  = (n) => '₹' + Number(n||0).toLocaleString('en-IN');
+const fmtD = (d) => {
+  if (!d) return '';
+  const dt = new Date(d);
+  const day = dt.getDate();
+  const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()];
+  return `${day} ${mon}`;
+};
+const fmt = (n) => '₹' + Number(n||0).toLocaleString('en-IN');
 
 export default function ProjectsPage() {
   const [projects,        setProjects]        = useState([]);
@@ -37,12 +43,18 @@ export default function ProjectsPage() {
   const [filterService,   setFilterService]   = useState('');
   const [filterPriority,  setFilterPriority]  = useState('');
   const [filterRecurring, setFilterRecurring] = useState('');
+  const [filterClient,    setFilterClient]    = useState('');
+  const [clientsList,     setClientsList]     = useState([]);
   const [page,            setPage]            = useState(1);
   const [showCreate,      setShowCreate]      = useState(false);
   const [editProject,     setEditProject]     = useState(null);
   const [deleteId,        setDeleteId]        = useState(null);
   const [deleting,        setDeleting]        = useState(false);
   const limit = 10;
+
+  useEffect(() => {
+    clientsApi.getAll({ limit: 100 }).then(r => setClientsList(r.data.data.clients || [])).catch(() => {});
+  }, []);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -54,12 +66,15 @@ export default function ProjectsPage() {
         serviceType: filterService   || undefined,
         priority:    filterPriority  || undefined,
         isRecurring: filterRecurring || undefined,
+        clientName:  filterClient    || undefined,
       });
-      setProjects(res.data.data.projects);
-      setTotal(res.data.data.pagination.total);
+      console.log('projects response:', res.data);
+   const data = res.data.data;
+setProjects(Array.isArray(data.projects) ? data.projects : []);
+setTotal(data.pagination?.total ?? 0);
     } catch { toast.error('Failed to load projects'); }
     finally { setLoading(false); }
-  }, [page, search, filterStatus, filterService, filterPriority, filterRecurring]);
+  }, [page, search, filterStatus, filterService, filterPriority, filterRecurring, filterClient]);
 
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
@@ -154,6 +169,13 @@ export default function ProjectsPage() {
           <option value="true">🔄 Recurring</option>
           <option value="false">One-time</option>
         </select>
+
+        <select className={selectCls} value={filterClient} onChange={e => { setFilterClient(e.target.value); setPage(1); }}>
+          <option value="">All Clients</option>
+          {clientsList.map(c => (
+            <option key={c._id} value={c.name}>{c.name}</option>
+          ))}
+        </select>
       </div>
 
       {/* ── Table ── */}
@@ -175,7 +197,7 @@ export default function ProjectsPage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-100 dark:bg-[#0f0e0c] border-b border-gray-300 dark:border-white/[0.06]">
-                  {['Project','Client','Service','Priority','Status','Recurring','Actions'].map(h => (
+                  {['Project','Client','Service','Priority','Status','Budget','Recurring','Actions'].map(h => (
                     <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-gray-500 dark:text-white uppercase tracking-widest font-sans">
                       {h}
                     </th>
@@ -218,7 +240,7 @@ export default function ProjectsPage() {
                     {/* Service */}
                     <td className="px-5 py-4">
                       {p.serviceType ? (
-                        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                           style={{ background:'rgba(212,168,67,0.10)', border:'1px solid rgba(212,168,67,0.25)', color:'#b8860b' }}>
                           {SERVICE_EMOJI[p.serviceType]} {p.serviceType}
                         </span>
@@ -241,6 +263,15 @@ export default function ProjectsPage() {
                     {/* Status */}
                     <td className="px-5 py-4">
                       <StatusBadge status={p.status}/>
+                    </td>
+
+                    {/* Budget */}
+                    <td className="px-5 py-4">
+                      {p.budget ? (
+                        <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-400">
+                          ₹{Number(p.budget).toLocaleString('en-IN')}
+                        </span>
+                      ) : <span className="text-gray-300 dark:text-gray-600">—</span>}
                     </td>
 
                     {/* Recurring */}

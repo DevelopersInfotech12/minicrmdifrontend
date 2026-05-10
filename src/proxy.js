@@ -3,23 +3,7 @@ import { NextResponse } from 'next/server';
 const PUBLIC_PATHS = ['/login', '/register'];
 
 export function proxy(request) {
-  const { pathname, searchParams } = request.nextUrl;
-  
-  // Handle token passed via URL query param (from Google OAuth)
-  const urlToken = searchParams.get('token');
-  if (urlToken) {
-    const redirectTo = pathname === '/auth/callback' ? '/dashboard' : pathname;
-    const response = NextResponse.redirect(new URL('/dashboard', request.url));
-    response.cookies.set('token', urlToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-    });
-    return response;
-  }
-
+  const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
   if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {

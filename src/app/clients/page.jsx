@@ -29,7 +29,7 @@ function ActionMenu({ client, onEdit, onToggle, onDelete, onClose }) {
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div
-        style={{ position:'absolute', top: pos.top, right: pos.right, zIndex: 50 }}
+        style={{ position:'absolute', top: 290, right: 30, zIndex: 50 }}
         className="w-44 bg-white dark:bg-[#1e1b16]
           border border-gray-200 dark:border-white/[0.07]
           rounded-xl shadow-lg overflow-hidden p-1 animate-scale-in"
@@ -37,7 +37,7 @@ function ActionMenu({ client, onEdit, onToggle, onDelete, onClose }) {
         {[
           { icon: Eye,        label: 'View Profile', href: `/clients/${client._id}`, color: 'text-gray-700 dark:text-gray-300' },
           { icon: Pencil,     label: 'Edit',         onClick: onEdit,               color: 'text-gray-700 dark:text-gray-300' },
-          { icon: ToggleLeft, label: 'Toggle Status',onClick: onToggle,             color: 'text-gray-700 dark:text-gray-300' },
+          { icon: ToggleLeft, label: 'Status Change',onClick: onToggle,             color: 'text-gray-700 dark:text-gray-300' },
           { icon: Trash2,     label: 'Delete',       onClick: onDelete,             color: 'text-red-500' },
         ].map(({ icon: Icon, label, href, onClick, color }) =>
           href ? (
@@ -63,7 +63,10 @@ export default function ClientsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterActive, setFilterActive] = useState('');
+  const [filterActive,    setFilterActive]    = useState('');
+  const [filterService,   setFilterService]   = useState('');
+  const [filterPriority,  setFilterPriority]  = useState('');
+  const [filterRecurring, setFilterRecurring] = useState('');
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
   const [editClient, setEditClient] = useState(null);
@@ -75,12 +78,19 @@ export default function ClientsPage() {
   const fetchClients = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await clientsApi.getAll({ page, limit, search: search || undefined, isActive: filterActive || undefined });
+      const res = await clientsApi.getAll({
+        page, limit,
+        search:      search      || undefined,
+        isActive:    filterActive    || undefined,
+        serviceType: filterService   || undefined,
+        priority:    filterPriority  || undefined,
+        isRecurring: filterRecurring || undefined,
+      });
       setClients(res.data.data.clients);
       setTotal(res.data.data.pagination.total);
     } catch { toast.error('Failed to load clients'); }
     finally { setLoading(false); }
-  }, [page, search, filterActive]);
+  }, [page, search, filterActive, filterService, filterPriority, filterRecurring]);
 
   useEffect(() => { fetchClients(); }, [fetchClients]);
 
@@ -136,6 +146,45 @@ export default function ClientsPage() {
           <option value="true">Active</option>
           <option value="false">Inactive</option>
         </select>
+        <select
+          className="px-4 py-2.5 rounded-xl text-sm font-medium min-w-[160px]
+            bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/[0.07]
+            text-gray-700 dark:text-gray-300 focus:outline-none focus:border-gold-500
+            focus:ring-2 focus:ring-gold-500/20 transition-all cursor-pointer"
+          value={filterService} onChange={e => { setFilterService(e.target.value); setPage(1); }}>
+          <option value="">All Services</option>
+          <option value="Website Development">🌐 Website Dev</option>
+          <option value="App Development">📱 App Dev</option>
+          <option value="SEO">🔍 SEO</option>
+          <option value="Social Media Marketing">📣 Social Media</option>
+          <option value="Google Ads">🔎 Google Ads</option>
+          <option value="Meta Ads">📘 Meta Ads</option>
+          <option value="Branding / Design">🎨 Branding</option>
+          <option value="Content Writing">✍️ Content</option>
+          <option value="Other">Other</option>
+        </select>
+        <select
+          className="px-4 py-2.5 rounded-xl text-sm font-medium min-w-[140px]
+            bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/[0.07]
+            text-gray-700 dark:text-gray-300 focus:outline-none focus:border-gold-500
+            focus:ring-2 focus:ring-gold-500/20 transition-all cursor-pointer"
+          value={filterPriority} onChange={e => { setFilterPriority(e.target.value); setPage(1); }}>
+          <option value="">All Priority</option>
+          <option value="Urgent">🔴 Urgent</option>
+          <option value="Long-term">🔵 Long-term</option>
+          <option value="One-time">⚪ One-time</option>
+          <option value="Retainer">🟣 Retainer</option>
+        </select>
+        <select
+          className="px-4 py-2.5 rounded-xl text-sm font-medium min-w-[130px]
+            bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/[0.07]
+            text-gray-700 dark:text-gray-300 focus:outline-none focus:border-gold-500
+            focus:ring-2 focus:ring-gold-500/20 transition-all cursor-pointer"
+          value={filterRecurring} onChange={e => { setFilterRecurring(e.target.value); setPage(1); }}>
+          <option value="">All Types</option>
+          <option value="true">🔄 Recurring</option>
+          <option value="false">One-time</option>
+        </select>
       </div>
 
       {/* Table — no overflow-hidden so portal dropdown isn't clipped */}
@@ -149,7 +198,7 @@ export default function ClientsPage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-100 dark:bg-[#0f0e0c] border-b border-gray-300 dark:border-white/[0.06]">
-                  {['Client', 'Contact', 'Company', 'Status', 'Actions'].map(h => (
+                  {['Client', 'Contact', 'Company', 'Revenue', 'Status', 'Actions'].map(h => (
                     <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-gray-500 dark:text-white uppercase tracking-widest font-sans">{h}</th>
                   ))}
                 </tr>
@@ -183,6 +232,15 @@ export default function ClientsPage() {
                       {client.company
                         ? <span className="flex items-center gap-1.5 text-[13px] font-medium text-gray-600 dark:text-gray-300"><Building2 size={12} className="text-gray-400" />{client.company}</span>
                         : <span className="text-gray-300 dark:text-gray-600">—</span>}
+                    </td>
+                    <td className="px-5 py-4">
+                      {client.totalBudget > 0 ? (
+                        <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-400">
+                          ₹{Number(client.totalBudget).toLocaleString('en-IN')}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300 dark:text-gray-600">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-4"><StatusBadge status={client.isActive} /></td>
                     <td className="px-5 py-4">

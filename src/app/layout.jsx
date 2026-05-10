@@ -13,15 +13,23 @@ export default function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('crm-theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark');}catch(e){document.documentElement.classList.add('dark');}})();` }} />
       </head>
-      <body className="bg-white dark:bg-[#0d0c0a] text-gray-900 dark:text-white">
+      <body style={{ margin:0, padding:0, background:'var(--bg-base)' }}>
         <ThemeProvider>
           {children}
-          <Toaster position="top-right" toastOptions={{
-            duration: 3500,
-            className: '!bg-white dark:!bg-[#1e1b16] !text-gray-900 dark:!text-white !border !border-gray-200 dark:!border-white/12 !rounded-2xl !text-sm !shadow-lg',
-            success: { iconTheme: { primary:'#e8b84b', secondary:'#fff' } },
-            error:   { iconTheme: { primary:'#ef4444', secondary:'#fff' } },
-          }} />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 3500,
+              style: {
+                background:'var(--bg-elevated)', color:'var(--text-primary)',
+                border:'1px solid var(--border-strong)', borderRadius:14,
+                fontSize:13, fontFamily:'Inter, system-ui, sans-serif',
+                boxShadow:'var(--shadow-lg)', padding:'12px 16px',
+              },
+              success:{ iconTheme:{ primary:'#e8b84b', secondary:'var(--bg-elevated)' } },
+              error:  { iconTheme:{ primary:'#ef4444', secondary:'var(--bg-elevated)' } },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

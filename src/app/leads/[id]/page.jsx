@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { use } from 'react';
+
 import { leadsApi } from '@/lib/api';
 import {
   ArrowLeft, Phone, Mail, Calendar, AlertCircle, CheckCircle2,
@@ -8,7 +8,7 @@ import {
   StickyNote, Plus, ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -46,8 +46,8 @@ function StageBadge({ stage }) {
   );
 }
 
-export default function LeadDetailPage({ params }) {
-  const { id } = use(params);
+export default function LeadDetailPage() {
+  const { id } = useParams();
   const router  = useRouter();
   const [lead, setLead]               = useState(null);
   const [loading, setLoading]         = useState(true);

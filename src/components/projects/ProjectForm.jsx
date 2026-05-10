@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { projectsApi, clientsApi } from '@/lib/api';
+import { projectsApi, clientsApi, employeesApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { RefreshCw, FolderKanban } from 'lucide-react';
+import { RefreshCw, FolderKanban, UserCheck } from 'lucide-react';
 
 const SERVICE_TYPES  = ["Website Development","App Development","SEO","Social Media Marketing","Google Ads","Meta Ads","Branding / Design","Content Writing","Other"];
 const PRIORITY_TYPES = ["Urgent","Long-term","One-time","Retainer"];
@@ -41,12 +41,16 @@ export default function ProjectForm({ project, defaultClientId, onSuccess, onCan
   const [billingCycle,    setBillingCycle]    = useState(project?.billingCycle || '');
   const [recurringAmount, setRecurringAmount] = useState(project?.recurringAmount || '');
   const [nextBillingDate, setNextBillingDate] = useState(project?.nextBillingDate ? project.nextBillingDate.substring(0,10) : '');
+  const [budget,          setBudget]          = useState(project?.budget ?? '');
+  const [assignedTo,      setAssignedTo]      = useState(project?.assignedTo?._id || project?.assignedTo || '');
   const [clients,         setClients]         = useState([]);
+  const [employees,       setEmployees]       = useState([]);
   const [loading,         setLoading]         = useState(false);
   const [errors,          setErrors]          = useState({});
 
   useEffect(() => {
     clientsApi.getAll({ limit: 100 }).then(r => setClients(r.data.data.clients)).catch(() => {});
+    employeesApi.getAll({ limit: 100 }).then(r => setEmployees(r.data.data?.employees || [])).catch(() => {});
   }, []);
 
   const validate = () => {
@@ -70,6 +74,8 @@ export default function ProjectForm({ project, defaultClientId, onSuccess, onCan
         priority:    priority    || undefined,
         startDate:   startDate   || undefined,
         endDate:     endDate     || undefined,
+        budget:      budget !== '' ? Number(budget) : null,
+        assignedTo:  assignedTo  || null,
         isRecurring,
         billingCycle:    isRecurring ? billingCycle            : undefined,
         recurringAmount: isRecurring ? Number(recurringAmount) : undefined,
@@ -171,6 +177,49 @@ export default function ProjectForm({ project, defaultClientId, onSuccess, onCan
           <input type="date" className={inputCls} value={endDate} onChange={e => setEndDate(e.target.value)}/>
         </Field>
       </div>
+
+      {/* Assigned To + Budget */}
+      <div className="grid grid-cols-2 gap-3.5">
+        {/* Assigned To */}
+        <Field label="Assigned To">
+          <div className="relative">
+            <UserCheck size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <select
+              className={`${inputCls} pl-8`}
+              value={assignedTo}
+              onChange={e => setAssignedTo(e.target.value)}
+            >
+              <option value="">Unassigned</option>
+              {employees.map(emp => (
+                <option key={emp._id} value={emp._id}>
+                  {emp.name}{emp.role ? ` — ${emp.role}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        </Field>
+
+        {/* Budget */}
+        <Field label="Project Budget (₹)">
+          <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-[13px] font-semibold pointer-events-none">₹</span>
+            <input
+              type="number"
+              min="0"
+              className={`${inputCls} pl-7`}
+              placeholder="e.g. 50000"
+              value={budget}
+              onChange={e => setBudget(e.target.value)}
+            />
+          </div>
+        </Field>
+      </div>
+
+      {budget !== '' && Number(budget) > 0 && (
+        <p className="text-[11px] text-amber-600 dark:text-amber-400 -mt-2 font-semibold">
+          💰 ₹{Number(budget).toLocaleString('en-IN')} total project budget
+        </p>
+      )}
 
       {/* Recurring toggle box */}
       <div

@@ -1,18 +1,18 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { use } from 'react';
+
 import { projectsApi, milestoneApi, clientsApi } from '@/lib/api';
 import { ArrowLeft, Download } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 const fmt = (n) => 'Rs.' + Number(n || 0).toLocaleString('en-IN');
 
 const STATUS_COLOR = { Paid: '#10b981', Partial: '#f59e0b', Overdue: '#ef4444', Pending: '#94a3b8' };
 
-export default function InvoicePrintPage({ params }) {
-  const { projectId } = use(params);
+export default function InvoicePrintPage() {
+  const { projectId } = useParams();
   const router = useRouter();
   const [project, setProject]     = useState(null);
   const [client, setClient]       = useState(null);

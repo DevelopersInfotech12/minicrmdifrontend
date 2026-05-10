@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { use } from 'react';
-import { clientsApi, projectsApi } from '@/lib/api';
+
+import { clientsApi } from '@/lib/api';
 import {
   ArrowLeft, Mail, Phone, Building2, MapPin, Pencil,
   FolderKanban, CreditCard, StickyNote, FileText, TrendingUp,
@@ -9,14 +9,15 @@ import {
   Download, ExternalLink, BarChart3, Activity
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import StatusBadge from '@/components/ui/StatusBadge';
 import Modal from '@/components/ui/Modal';
 import ClientForm from '@/components/clients/ClientForm';
 import ProjectForm from '@/components/projects/ProjectForm';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { invoiceApi } from '@/lib/api';
+import MeetingsList from '@/components/meetings/MeetingsList';
+import api, { invoicesApi } from '@/lib/api'; // ← api default import for download
 
 const fmt  = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
 const fmtD = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -38,13 +39,13 @@ const PROJECT_GRADIENT = {
 function StatCard({ label, value, sub, icon: Icon, gradient }) {
   return (
     <div className="bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl p-5 relative overflow-hidden shadow-card dark:shadow-card-dark group hover:border-gray-300 dark:hover:border-white/20 transition-all">
-      <div style={{ position:'absolute', top:-20, right:-20, width:80, height:80, borderRadius:'50%', background:`linear-gradient(135deg,${gradient})`, opacity:0.12, filter:'blur(20px)' }}/>
+      <div style={{ position:'absolute', top:-20, right:-20, width:80, height:80, borderRadius:'50%',  }}/>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 flex-shrink-0"
         style={{ background:`linear-gradient(135deg,${gradient})` }}>
         <Icon size={17} className="text-white"/>
       </div>
       <p className="font-display font-black text-2xl text-gray-900 dark:text-white tracking-tight leading-none">{value}</p>
-      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 mt-1">{label}</p>
+      <p className="text-[14px] font-semibold text-gray-500 dark:text-gray-400 mt-1">{label}</p>
       {sub && <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
     </div>
   );
@@ -157,10 +158,12 @@ function InvoicesSection({ invoices }) {
   const handleDownload = async (inv) => {
     setDownloading(inv._id);
     try {
-      const res = await invoiceApi.download(inv._id);
+      // ← FIXED: use api directly with responseType blob
+      const res = await api.get(`/invoices/${inv._id}/download`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement('a'); a.href = url; a.download = inv.fileName; a.click();
-      window.URL.revokeObjectURL(url); toast.success('Downloaded!');
+      window.URL.revokeObjectURL(url);
+      toast.success('Downloaded!');
     } catch { toast.error('Download failed'); }
     finally { setDownloading(null); }
   };
@@ -202,17 +205,18 @@ function InvoicesSection({ invoices }) {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-export default function ClientProfilePage({ params }) {
-  const { id }    = use(params);
+export default function ClientProfilePage() {
+  const { id } = useParams();
   const router    = useRouter();
-  const [profile, setProfile]       = useState(null);
-  const [loading, setLoading]       = useState(true);
-  const [activeTab, setActiveTab]   = useState('overview');
-  const [showEdit, setShowEdit]     = useState(false);
+  const [profile, setProfile]         = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [activeTab, setActiveTab]     = useState('overview');
+  const [showEdit, setShowEdit]       = useState(false);
   const [showProject, setShowProject] = useState(false);
 
   const fetchProfile = async () => {
     try {
+      // ← FIXED: use getProfile which calls /clients/:id/profile
       const res = await clientsApi.getProfile(id);
       setProfile(res.data.data);
     } catch { toast.error('Failed to load profile'); router.push('/clients'); }
@@ -236,6 +240,7 @@ export default function ClientProfilePage({ params }) {
     { key:'overview', label:'📊 Overview' },
     { key:'projects', label:`📁 Projects (${projects.length})` },
     { key:'payments', label:`💰 Payments (${payments.length})` },
+    { key:'meetings', label:'📅 Meetings' },
     { key:'notes',    label:`📝 Notes (${notes.length})` },
     { key:'invoices', label:`📄 Invoices (${invoices.length})` },
   ];
@@ -253,8 +258,8 @@ export default function ClientProfilePage({ params }) {
         </Link>
 
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-display font-black text-[18px] text-[#0a0a0a] flex-shrink-0 mt-0.5"
-          style={{ background:'linear-gradient(135deg,var(--gold,#e8b84b),#9a7020)' }}>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-display font-black text-[18px] text-white flex-shrink-0 mt-0.5 bg-indigo-500 "
+         >
           {initials}
         </div>
 
@@ -268,20 +273,6 @@ export default function ClientProfilePage({ params }) {
               <Building2 size={12}/>{client.company}
             </p>
           )}
-          <div className="flex items-center gap-4 mt-1 flex-wrap">
-            <a href={`mailto:${client.email}`}
-              className="flex items-center gap-1.5 text-[12px] text-gray-400 dark:text-gray-500 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors no-underline">
-              <Mail size={11}/>{client.email}
-            </a>
-            <span className="flex items-center gap-1.5 text-[12px] text-gray-400 dark:text-gray-500">
-              <Phone size={11}/>{client.phone}
-            </span>
-            {client.address && (
-              <span className="flex items-center gap-1.5 text-[12px] text-gray-400 dark:text-gray-500">
-                <MapPin size={11}/>{client.address}
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Actions */}
@@ -291,8 +282,8 @@ export default function ClientProfilePage({ params }) {
             <Plus size={13}/> New Project
           </button>
           <button onClick={() => setShowEdit(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-bold cursor-pointer transition-all"
-            style={{ background:'var(--gold,#e8b84b)', color:'#0a0a0a', border:'1.5px solid rgba(232,184,75,0.6)', boxShadow:'0 2px 8px rgba(232,184,75,0.25)' }}>
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-bold cursor-pointer transition-all bg-indigo-500 text-[#fff]"
+            >
             <Pencil size={13}/> Edit
           </button>
         </div>
@@ -339,7 +330,7 @@ export default function ClientProfilePage({ params }) {
           <button key={t.key} onClick={() => setActiveTab(t.key)}
             className="px-4 py-2 rounded-lg text-[13px] font-bold cursor-pointer border-none transition-all"
             style={activeTab === t.key
-              ? { background:'var(--gold,#e8b84b)', color:'#0a0a0a' }
+              ? { background:'#6366F1', color:'#fff' }
               : { background:'transparent', color:'#6b7280' }
             }>
             {t.label}
@@ -357,7 +348,7 @@ export default function ClientProfilePage({ params }) {
             action={
               <button onClick={() => setShowProject(true)}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[12px] font-bold cursor-pointer border-none transition-all"
-                style={{ background:'var(--gold,#e8b84b)', color:'#0a0a0a' }}>
+                style={{ background:'#6366F1', color:'#ffffff' }}>
                 <Plus size={12}/> Add
               </button>
             }
@@ -405,7 +396,6 @@ export default function ClientProfilePage({ params }) {
               </div>
             ) : (
               <div className="p-5">
-                {/* Donut + legend */}
                 <div className="flex items-center gap-5 mb-5">
                   <div className="relative w-24 h-24 flex-shrink-0">
                     <svg viewBox="0 0 36 36" className="w-24 h-24 -rotate-90">
@@ -438,7 +428,6 @@ export default function ClientProfilePage({ params }) {
                     ))}
                   </div>
                 </div>
-                {/* Recent payments */}
                 <div className="border-t border-gray-100 dark:border-white/[0.06] -mx-5">
                   {payments.slice(0,3).map(p => <PaymentRow key={p._id} payment={p}/>)}
                   {payments.length > 3 && (
@@ -515,9 +504,9 @@ export default function ClientProfilePage({ params }) {
         <div className="max-w-3xl">
           <div className="grid grid-cols-3 gap-3.5 mb-5">
             {[
-              { label:'Total Billed', val:stats.totalRevenue,  cls:'bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09]',               color:'text-gray-900 dark:text-white' },
-              { label:'Received',     val:stats.totalPaid,     cls:'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40', color:'text-emerald-700 dark:text-emerald-400' },
-              { label:'Pending',      val:stats.totalPending,  cls:'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40',         color:'text-amber-700 dark:text-amber-400' },
+              { label:'Total Billed', val:stats.totalRevenue, cls:'bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09]',               color:'text-gray-900 dark:text-white' },
+              { label:'Received',     val:stats.totalPaid,    cls:'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40', color:'text-emerald-700 dark:text-emerald-400' },
+              { label:'Pending',      val:stats.totalPending, cls:'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40',         color:'text-amber-700 dark:text-amber-400' },
             ].map(({ label, val, cls, color }) => (
               <div key={label} className={`rounded-2xl p-4 text-center ${cls}`}>
                 <p className={`font-display font-black text-xl ${color}`}>{fmt(val)}</p>
@@ -532,6 +521,13 @@ export default function ClientProfilePage({ params }) {
               </div>
             ) : payments.map(p => <PaymentRow key={p._id} payment={p}/>)}
           </SectionCard>
+        </div>
+      )}
+
+      {/* ══ MEETINGS TAB ══ */}
+      {activeTab === 'meetings' && (
+        <div className="max-w-2xl">
+          <MeetingsList clientId={id} />
         </div>
       )}
 
