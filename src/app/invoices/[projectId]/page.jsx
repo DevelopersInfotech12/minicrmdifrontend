@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-import { projectsApi, milestoneApi, clientsApi } from '@/lib/api';
+import { projectsApi, milestonesApi, clientsApi } from '@/lib/api';
 import { ArrowLeft, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
@@ -24,7 +24,7 @@ export default function InvoicePrintPage() {
   useEffect(() => {
     Promise.all([
       projectsApi.getById(projectId),
-      milestoneApi.getByProject(projectId),
+      milestonesApi.getByProject(projectId),
     ]).then(async ([pRes, mRes]) => {
       const proj = pRes.data.data.project;
       setProject(proj);
