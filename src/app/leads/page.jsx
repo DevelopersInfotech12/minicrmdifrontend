@@ -1,7 +1,8 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { leadsApi } from '@/lib/api';
-import { Users, Plus, Search, Phone, Mail, Calendar, AlertCircle, Pencil, Trash2, Eye, ArrowRight, RefreshCw } from 'lucide-react';
+import { Users, Plus, Search, Phone, Mail, Calendar, AlertCircle, Pencil, Trash2, Eye, ArrowRight, RefreshCw, ChevronDown, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import PageHeader from '@/components/ui/PageHeader';
@@ -13,12 +14,12 @@ import LeadForm from '@/components/leads/LeadForm';
 const STAGES = ["New", "Called", "Meeting Done", "Proposal Sent", "Converted", "Lost"];
 
 const STAGE_CFG = {
-  "New":           { dot: '#9ca3af', bg: 'rgba(156,163,175,0.12)', border: '#9ca3af', text: '#6b7280' },
-  "Called":        { dot: '#60a5fa', bg: 'rgba(96,165,250,0.12)',  border: '#60a5fa', text: '#3b82f6' },
-  "Meeting Done":  { dot: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: '#a78bfa', text: '#8b5cf6' },
-  "Proposal Sent": { dot: '#fbbf24', bg: 'rgba(251,191,36,0.12)',  border: '#fbbf24', text: '#d97706' },
-  "Converted":     { dot: '#34d399', bg: 'rgba(52,211,153,0.12)',  border: '#34d399', text: '#059669' },
-  "Lost":          { dot: '#f87171', bg: 'rgba(248,113,113,0.12)', border: '#f87171', text: '#dc2626' },
+  "New": { dot: '#9ca3af', bg: 'rgba(156,163,175,0.12)', border: '#9ca3af', text: '#6b7280' },
+  "Called": { dot: '#60a5fa', bg: 'rgba(96,165,250,0.12)', border: '#60a5fa', text: '#3b82f6' },
+  "Meeting Done": { dot: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: '#a78bfa', text: '#8b5cf6' },
+  "Proposal Sent": { dot: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: '#fbbf24', text: '#d97706' },
+  "Converted": { dot: '#34d399', bg: 'rgba(52,211,153,0.12)', border: '#34d399', text: '#059669' },
+  "Lost": { dot: '#f87171', bg: 'rgba(248,113,113,0.12)', border: '#f87171', text: '#dc2626' },
 };
 
 const SOURCE_EMOJI = {
@@ -26,7 +27,7 @@ const SOURCE_EMOJI = {
   "Google Ads": "🔍", "Walk-in": "🚶", "Cold Call": "📞", "Website Form": "🌐", "WhatsApp": "💬"
 };
 
-const fmt  = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
+const fmt = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
 const fmtD = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
 function StageBadge({ stage }) {
@@ -49,10 +50,7 @@ function PipelineBar({ pipeline, onFilter, activeStage }) {
   const total = Object.values(pipeline.stages).reduce((s, v) => s + v, 0);
 
   return (
-    // ← Same pattern as dashboard StatCard / recent tables:
-    //   bg-gray-50 dark:bg-[#161410]  border border-gray-200 dark:border-white/[0.09]
     <div className="animate-fade-up bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl p-5 mb-5 shadow-card dark:shadow-card-dark">
-
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="font-display font-bold text-base text-gray-900 dark:text-white tracking-tight">
@@ -76,10 +74,10 @@ function PipelineBar({ pipeline, onFilter, activeStage }) {
         <div className="flex h-1 rounded-full overflow-hidden gap-0.5 mb-4">
           {STAGES.map(s => {
             const count = pipeline.stages[s] || 0;
-            const pct   = total > 0 ? (count / total) * 100 : 0;
+            const pct = total > 0 ? (count / total) * 100 : 0;
             if (pct === 0) return null;
-            const colors = { "New":"#9ca3af","Called":"#60a5fa","Meeting Done":"#a78bfa","Proposal Sent":"#fbbf24","Converted":"#34d399","Lost":"#f87171" };
-            return <div key={s} style={{ width:`${pct}%`, background:colors[s], borderRadius:99, transition:'width 0.5s ease' }} />;
+            const colors = { "New": "#9ca3af", "Called": "#60a5fa", "Meeting Done": "#a78bfa", "Proposal Sent": "#fbbf24", "Converted": "#34d399", "Lost": "#f87171" };
+            return <div key={s} style={{ width: `${pct}%`, background: colors[s], borderRadius: 99, transition: 'width 0.5s ease' }} />;
           })}
         </div>
       )}
@@ -87,19 +85,17 @@ function PipelineBar({ pipeline, onFilter, activeStage }) {
       {/* Stage filter buttons */}
       <div className="grid grid-cols-6 gap-2">
         {STAGES.map(s => {
-          const count    = pipeline.stages[s] || 0;
-          const cfg      = STAGE_CFG[s];
+          const count = pipeline.stages[s] || 0;
+          const cfg = STAGE_CFG[s];
           const isActive = activeStage === s;
           return (
             <button
               key={s}
               onClick={() => onFilter(isActive ? '' : s)}
-              // light: white bg inactive / dark: dark elevated
-              className={`text-left rounded-xl p-2.5 transition-all cursor-pointer border ${
-                isActive
-                  ? ''
-                  : 'bg-white dark:bg-[#1e1b16] border-gray-200 dark:border-white/[0.09]'
-              }`}
+              className={`text-left rounded-xl p-2.5 transition-all cursor-pointer border ${isActive
+                ? ''
+                : 'bg-white dark:bg-[#1e1b16] border-gray-200 dark:border-white/[0.09]'
+                }`}
               style={isActive ? {
                 background: cfg.bg,
                 border: `2px solid ${cfg.border}`,
@@ -108,7 +104,6 @@ function PipelineBar({ pipeline, onFilter, activeStage }) {
             >
               <p className="font-display font-extrabold text-2xl leading-none mb-1"
                 style={{ color: isActive ? cfg.text : undefined }}
-                // Use Tailwind for inactive color to respect dark mode
               >
                 <span className={isActive ? '' : 'text-gray-800 dark:text-white'}>{count}</span>
               </p>
@@ -124,27 +119,99 @@ function PipelineBar({ pipeline, onFilter, activeStage }) {
   );
 }
 
+// FIX 1: Added maxHeight + overflowY on menu for scroll when options are large
+function SelectDropdown({ value, onChange, options, placeholder, minWidth = 140 }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+  const ref = useRef(null);
+  const selected = options.find(o => o.value === value);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleOpen = () => {
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const menuHeight = 220;
+      // flip up if not enough space below
+      const top = spaceBelow < menuHeight
+        ? rect.top + window.scrollY - menuHeight - 6
+        : rect.bottom + window.scrollY + 6;
+      setPos({ top, left: rect.left + window.scrollX, width: rect.width });
+    }
+    setOpen(o => !o);
+  };
+
+  const menu = open ? ReactDOM.createPortal(
+    <div
+      style={{
+        position: 'absolute',
+        top: pos.top,
+        left: pos.left,
+        minWidth: Math.max(pos.width, minWidth),
+        zIndex: 9999,
+        // FIX: scroll when many options
+        maxHeight: 220,
+        overflowY: 'auto',
+      }}
+      className="bg-white dark:bg-[#1e1b16] border border-gray-200 dark:border-white/[0.09] rounded-xl shadow-xl py-1"
+    >
+      {options.map(opt => (
+        <button
+          key={opt.value}
+          onMouseDown={e => e.preventDefault()}
+          onClick={() => { onChange(opt.value); setOpen(false); }}
+          className="w-full flex items-center justify-between gap-2 px-3 py-2 text-[13px] font-medium text-left cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-[#2a2520] text-gray-700 dark:text-gray-200"
+        >
+          <span>{opt.label}</span>
+          {value === opt.value && <Check size={12} className="text-yellow-500 flex-shrink-0" />}
+        </button>
+      ))}
+    </div>,
+    document.body
+  ) : null;
+
+  return (
+    // FIX: added flex-shrink-0 so trigger button never collapses width
+    <div ref={ref} className="relative flex-shrink-0" style={{ minWidth }}>
+      <button
+        onClick={handleOpen}
+        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-[13px] font-medium bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] text-gray-500 dark:text-gray-300 outline-none focus:border-yellow-400 transition-colors cursor-pointer"
+      >
+        <span className={value ? 'text-gray-800 dark:text-white' : ''}>{selected ? selected.label : placeholder}</span>
+        <ChevronDown size={13} className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {menu}
+    </div>
+  );
+}
+
 export default function LeadsPage() {
-  const [leads,        setLeads]        = useState([]);
-  const [total,        setTotal]        = useState(0);
-  const [pipeline,     setPipeline]     = useState(null);
-  const [loading,      setLoading]      = useState(true);
-  const [view,         setView]         = useState('list');
-  const [search,       setSearch]       = useState('');
-  const [filterStage,  setFilterStage]  = useState('');
+  const [leads, setLeads] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [pipeline, setPipeline] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('list');
+  const [search, setSearch] = useState('');
+  const [filterStage, setFilterStage] = useState('');
   const [filterSource, setFilterSource] = useState('');
-  const [page,         setPage]         = useState(1);
-  const [showCreate,   setShowCreate]   = useState(false);
-  const [editLead,     setEditLead]     = useState(null);
-  const [deleteId,     setDeleteId]     = useState(null);
-  const [deleting,     setDeleting]     = useState(false);
+  const [filterFollowUp, setFilterFollowUp] = useState('');
+  const [page, setPage] = useState(1);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editLead, setEditLead] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const limit = 20;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [lRes, pRes] = await Promise.all([
-        leadsApi.getAll({ page, limit, search: search || undefined, stage: filterStage || undefined, source: filterSource || undefined }),
+        leadsApi.getAll({ page, limit, search: search || undefined, stage: filterStage || undefined, source: filterSource || undefined, followUp: filterFollowUp || undefined }),
         leadsApi.getPipeline(),
       ]);
       setLeads(lRes.data.data.leads);
@@ -152,7 +219,7 @@ export default function LeadsPage() {
       setPipeline(pRes.data.data);
     } catch { toast.error('Failed to load leads'); }
     finally { setLoading(false); }
-  }, [page, search, filterStage, filterSource]);
+  }, [page, search, filterStage, filterSource, filterFollowUp]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -177,25 +244,21 @@ export default function LeadsPage() {
         subtitle={`${total} lead${total !== 1 ? 's' : ''} in pipeline`}
         action={
           <div className="flex items-center gap-2.5">
-            {/* View toggle — same bg/border pattern as dashboard secondary cards */}
             <div className="flex bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-xl p-0.5 gap-0.5">
               {['list', 'kanban'].map(v => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer border-none transition-all ${
-                    view === v
-                      ? 'text-[#0a0a0a]'
-                      : 'bg-transparent text-gray-500 dark:text-gray-400'
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer border-none transition-all ${view === v
+                    ? 'text-[#0a0a0a]'
+                    : 'bg-transparent text-gray-500 dark:text-gray-400'
+                    }`}
                   style={view === v ? { background: 'var(--gold, #e8b84b)' } : {}}
                 >
                   {v === 'list' ? '☰ List' : '⊞ Board'}
                 </button>
               ))}
             </div>
-
-            {/* Add Lead button — bordered like dashboard card style */}
             <button
               onClick={() => setShowCreate(true)}
               className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer border border-gray-200 dark:border-white/[0.09]"
@@ -208,9 +271,12 @@ export default function LeadsPage() {
 
       <PipelineBar pipeline={pipeline} onFilter={s => { setFilterStage(s); setPage(1); }} activeStage={filterStage} />
 
-      {/* Filters */}
-      <div className="flex gap-2.5 mb-5 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
+      {/* FIX 2: Filter bar — search input has min-w-0 so it shrinks properly,
+          dropdowns have flex-shrink-0 so they never collapse.
+          No layout reflow when dropdown opens (portal renders on body). */}
+      <div className="flex gap-2.5 mb-5 items-center flex-wrap">
+        {/* Search: flex-1 + min-w-0 so it takes remaining space but can shrink */}
+        <div className="relative flex-1 min-w-0" style={{ minWidth: 180 }}>
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             className="w-full pl-9 pr-3 py-2.5 rounded-xl text-[13px] font-medium bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none focus:border-yellow-400 dark:focus:border-yellow-500 transition-colors"
@@ -219,20 +285,44 @@ export default function LeadsPage() {
             onChange={e => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
-        <select
-          className="min-w-[160px] px-3 py-2.5 rounded-xl text-[13px] font-medium bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] text-gray-500 dark:text-gray-300 outline-none focus:border-yellow-400 transition-colors cursor-pointer"
+        <SelectDropdown
           value={filterSource}
-          onChange={e => { setFilterSource(e.target.value); setPage(1); }}
-        >
-          <option value="">All Sources</option>
-          {Object.keys(SOURCE_EMOJI).map(s => (
-            <option key={s} value={s}>{SOURCE_EMOJI[s]} {s}</option>
-          ))}
-        </select>
-        {(filterStage || filterSource || search) && (
+          onChange={v => { setFilterSource(v); setPage(1); }}
+          placeholder="All Sources"
+          minWidth={150}
+          options={[
+            { value: '', label: 'All Sources' },
+            ...Object.keys(SOURCE_EMOJI).map(s => ({ value: s, label: `${SOURCE_EMOJI[s]} ${s}` })),
+          ]}
+        />
+        <SelectDropdown
+          value={filterStage}
+          onChange={v => { setFilterStage(v); setPage(1); }}
+          placeholder="All Stages"
+          minWidth={145}
+          options={[
+            { value: '', label: 'All Stages' },
+            ...STAGES.map(s => ({ value: s, label: s })),
+          ]}
+        />
+        <SelectDropdown
+          value={filterFollowUp}
+          onChange={v => { setFilterFollowUp(v); setPage(1); }}
+          placeholder="All Follow-ups"
+          minWidth={165}
+          options={[
+            { value: '', label: 'All Follow-ups' },
+            { value: 'overdue', label: '⚠️ Overdue' },
+            { value: 'today', label: '📅 Today' },
+            { value: 'this_week', label: '📆 This Week' },
+            { value: 'next_week', label: '🗓️ Next Week' },
+            { value: 'no_date', label: '❌ No Date Set' },
+          ]}
+        />
+        {(filterStage || filterSource || filterFollowUp || search) && (
           <button
-            onClick={() => { setFilterStage(''); setFilterSource(''); setSearch(''); setPage(1); }}
-            className="btn-secondary flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold cursor-pointer"
+            onClick={() => { setFilterStage(''); setFilterSource(''); setFilterFollowUp(''); setSearch(''); setPage(1); }}
+            className="btn-secondary flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold cursor-pointer flex-shrink-0"
           >
             <RefreshCw size={13} /> Clear
           </button>
@@ -241,161 +331,161 @@ export default function LeadsPage() {
 
       {/* ── LIST VIEW ────────────────────────────────────────────────── */}
       {view === 'list' && (
-        // Outer wrapper: bg-gray-50 (light) / dark bg — same as dashboard recent tables
-        <div className="bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl overflow-hidden shadow-card dark:shadow-card-dark">
+        // FIX 3: Changed overflow-hidden → overflow-x-auto so table rows never
+        // get clipped/distorted. Inner div has minWidth so table columns stay intact.
+        <div className="bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl overflow-x-auto shadow-card dark:shadow-card-dark">
+          <div style={{ minWidth: 860 }}>
 
-          {loading ? (
-            <div className="p-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 py-3 border-b border-gray-100 dark:border-white/[0.06]">
-                  <div className="skeleton w-9 h-9 rounded-xl flex-shrink-0" />
-                  <div className="flex-1">
-                    <div className="skeleton h-3.5 w-2/5 rounded mb-1.5" />
-                    <div className="skeleton h-3 w-1/4 rounded" />
+            {loading ? (
+              <div className="p-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 py-3 border-b border-gray-100 dark:border-white/[0.06]">
+                    <div className="skeleton w-9 h-9 rounded-xl flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="skeleton h-3.5 w-2/5 rounded mb-1.5" />
+                      <div className="skeleton h-3 w-1/4 rounded" />
+                    </div>
+                    <div className="skeleton h-6 w-24 rounded-full" />
                   </div>
-                  <div className="skeleton h-6 w-24 rounded-full" />
-                </div>
-              ))}
-            </div>
-          ) : leads.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="No leads found"
-              description="Add your first lead to start tracking your pipeline."
-              action={
-                <button
-                  onClick={() => setShowCreate(true)}
-                  className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer border border-gray-200 dark:border-white/[0.09]"
-                >
-                  <Plus size={14} /> Add Lead
-                </button>
-              }
-            />
-          ) : (
-            <>
-              <table className="w-full border-collapse">
-                <thead>
-                  {/* Table head: bg-gray-100 light / slightly elevated dark — matches dashboard table header pattern */}
-                  <tr className="bg-gray-100 dark:bg-[#1e1b16] border-b border-gray-200 dark:border-white/[0.09]">
-                    {['Lead', 'Contact', 'Services', 'Source', 'Budget', 'Follow-up', 'Stage', 'Actions'].map(h => (
-                      <th
-                        key={h}
-                        className="text-left px-4 py-3 text-[12px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-100 font-sans border-r border-gray-200 dark:border-white/[0.06] last:border-r-0"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {leads.map(lead => {
-                    const isOverdue = lead.followUpDate && new Date(lead.followUpDate) < new Date() && !['Converted', 'Lost'].includes(lead.stage);
-                    return (
-                      <tr
-                        key={lead._id}
-                        className={`border-b border-gray-100 dark:border-white/[0.06] transition-colors hover:bg-white dark:hover:bg-[#1e1b16] ${
-                          isOverdue ? 'bg-red-50/40 dark:bg-red-900/10' : ''
-                        }`}
-                      >
-                        {/* Lead */}
-                        <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
-                          <p className="font-display font-bold text-[15px] text-gray-800 dark:text-white tracking-tight leading-none">{lead.name}</p>
-                          {lead.referenceName && <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-0.5">{lead.referenceName}</p>}
-                          {isOverdue && (
-                            <span className="inline-block mt-1 text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 px-1.5 py-0.5 rounded-full">
-                              OVERDUE
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Contact */}
-                        <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
-                          <a href={`tel:${lead.phone}`} className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 no-underline mb-1">
-                            <Phone size={10} className="text-gray-400" />{lead.phone}
-                          </a>
-                          {lead.email && (
-                            <a href={`mailto:${lead.email}`} className="flex items-center gap-1.5 text-xs font-medium text-gray-400 dark:text-gray-400 no-underline max-w-[160px] truncate">
-                              <Mail size={10} />{lead.email}
-                            </a>
-                          )}
-                        </td>
-
-                        {/* Services */}
-                        <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
-                          <div className="flex flex-wrap gap-1">
-                            {lead.services?.slice(0, 2).map(s => (
-                              <span key={s} className="text-xs font-bold px-2 py-0.5 rounded-full"
-                                style={{ background:'var(--gold-glass,rgba(232,184,75,0.12))', border:'1px solid rgba(232,184,75,0.4)', color:'var(--gold,#e8b84b)' }}>
-                                {s}
+                ))}
+              </div>
+            ) : leads.length === 0 ? (
+              <EmptyState
+                icon={Users}
+                title="No leads found"
+                description="Add your first lead to start tracking your pipeline."
+                action={
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer border border-gray-200 dark:border-white/[0.09]"
+                  >
+                    <Plus size={14} /> Add Lead
+                  </button>
+                }
+              />
+            ) : (
+              <>
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100 dark:bg-[#1e1b16] border-b border-gray-200 dark:border-white/[0.09]">
+                      {['Lead', 'Contact', 'Services', 'Source', 'Budget', 'Follow-up', 'Stage', 'Actions'].map(h => (
+                        <th
+                          key={h}
+                          className="text-left px-4 py-3 text-[12px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-100 font-sans border-r border-gray-200 dark:border-white/[0.06] last:border-r-0 whitespace-nowrap"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leads.map(lead => {
+                      const isOverdue = lead.followUpDate && new Date(lead.followUpDate) < new Date() && !['Converted', 'Lost'].includes(lead.stage);
+                      return (
+                        <tr
+                          key={lead._id}
+                          className={`border-b border-gray-100 dark:border-white/[0.06] transition-colors hover:bg-white dark:hover:bg-[#1e1b16] ${isOverdue ? 'bg-red-50/40 dark:bg-red-900/10' : ''}`}
+                        >
+                          {/* Lead */}
+                          <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
+                            <p className="font-display font-bold text-[15px] text-gray-800 dark:text-white tracking-tight leading-none whitespace-nowrap">{lead.name}</p>
+                            {lead.referenceName && <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-0.5 whitespace-nowrap">{lead.referenceName}</p>}
+                            {isOverdue && (
+                              <span className="inline-block mt-1 text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 px-1.5 py-0.5 rounded-full">
+                                OVERDUE
                               </span>
-                            ))}
-                            {lead.services?.length > 2 && <span className="text-[10px] text-gray-400 dark:text-gray-600">+{lead.services.length - 2}</span>}
-                          </div>
-                        </td>
+                            )}
+                          </td>
 
-                        {/* Source */}
-                        <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
-                          <span className="text-[13px] font-semibold text-gray-600 dark:text-gray-300">
-                            {SOURCE_EMOJI[lead.source]} {lead.source}
-                          </span>
-                        </td>
+                          {/* Contact */}
+                          <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
+                            <a href={`tel:${lead.phone}`} className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 no-underline mb-1 whitespace-nowrap">
+                              <Phone size={10} className="text-gray-400 flex-shrink-0" />{lead.phone}
+                            </a>
+                            {lead.email && (
+                              <a href={`mailto:${lead.email}`} className="flex items-center gap-1.5 text-xs font-medium text-gray-400 dark:text-gray-400 no-underline max-w-[160px] truncate">
+                                <Mail size={10} className="flex-shrink-0" />{lead.email}
+                              </a>
+                            )}
+                          </td>
 
-                        {/* Budget */}
-                        <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
-                          {lead.budget
-                            ? <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-400">{fmt(lead.budget)}</span>
-                            : <span className="text-gray-300 dark:text-gray-600 text-[13px]">—</span>}
-                        </td>
+                          {/* Services */}
+                          <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
+                            <div className="flex flex-wrap gap-1">
+                              {lead.services?.slice(0, 2).map(s => (
+                                <span key={s} className="text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
+                                  style={{ background: 'var(--gold-glass,rgba(232,184,75,0.12))', border: '1px solid rgba(232,184,75,0.4)', color: 'var(--gold,#e8b84b)' }}>
+                                  {s}
+                                </span>
+                              ))}
+                              {lead.services?.length > 2 && <span className="text-[10px] text-gray-400 dark:text-gray-600">+{lead.services.length - 2}</span>}
+                            </div>
+                          </td>
 
-                        {/* Follow-up */}
-                        <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
-                          {lead.followUpDate ? (
-                            <span className={`flex items-center gap-1 text-[13px] font-semibold ${isOverdue ? 'text-red-600' : 'text-gray-500 dark:text-gray-300'}`}>
-                              {isOverdue && <AlertCircle size={11} />}
-                              <Calendar size={11} />
-                              {fmtD(lead.followUpDate)}
+                          {/* Source */}
+                          <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
+                            <span className="text-[13px] font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                              {SOURCE_EMOJI[lead.source]} {lead.source}
                             </span>
-                          ) : <span className="text-gray-300 dark:text-gray-400 text-[13px]">—</span>}
-                        </td>
+                          </td>
 
-                        {/* Stage */}
-                        <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
-                          <StageBadge stage={lead.stage} />
-                        </td>
+                          {/* Budget */}
+                          <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
+                            {lead.budget
+                              ? <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">{fmt(lead.budget)}</span>
+                              : <span className="text-gray-300 dark:text-gray-600 text-[13px]">—</span>}
+                          </td>
 
-                        {/* Actions */}
-                        <td className="px-4 py-3.5">
-                          <div className="flex items-center gap-1">
-                            {[
-                              { icon: Eye,    href: `/leads/${lead._id}`, cls: 'text-yellow-600 dark:text-yellow-400' },
-                              { icon: Pencil, onClick: () => setEditLead(lead), cls: 'text-gray-500 dark:text-gray-400' },
-                              { icon: Trash2, onClick: () => setDeleteId(lead._id), cls: 'text-red-500' },
-                            ].map(({ icon: Icon, href, onClick, cls }, i) => {
-                              const base = `w-7 h-7 rounded-lg flex items-center justify-center bg-white dark:bg-[#1e1b16] border border-gray-200 dark:border-white/[0.09] transition-all hover:border-gray-300 dark:hover:border-white/20 cursor-pointer ${cls}`;
-                              return href
-                                ? <Link key={i} href={href} className={base}><Icon size={13} /></Link>
-                                : <button key={i} onClick={onClick} className={base}><Icon size={13} /></button>;
-                            })}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          {/* Follow-up */}
+                          <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
+                            {lead.followUpDate ? (
+                              <span className={`flex items-center gap-1 text-[13px] font-semibold whitespace-nowrap ${isOverdue ? 'text-red-600' : 'text-gray-500 dark:text-gray-300'}`}>
+                                {isOverdue && <AlertCircle size={11} className="flex-shrink-0" />}
+                                <Calendar size={11} className="flex-shrink-0" />
+                                {fmtD(lead.followUpDate)}
+                              </span>
+                            ) : <span className="text-gray-300 dark:text-gray-400 text-[13px]">—</span>}
+                          </td>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3.5 border-t border-gray-200 dark:border-white/[0.09]">
-                  <p className="text-xs font-medium text-gray-400 dark:text-gray-500">Page {page} of {totalPages}</p>
-                  <div className="flex gap-2">
-                    <button disabled={page <= 1}          onClick={() => setPage(p => p-1)} className="btn-secondary px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-40">Previous</button>
-                    <button disabled={page >= totalPages} onClick={() => setPage(p => p+1)} className="btn-secondary px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-40">Next</button>
+                          {/* Stage */}
+                          <td className="px-4 py-3.5 border-r border-gray-100 dark:border-white/[0.06]">
+                            <StageBadge stage={lead.stage} />
+                          </td>
+
+                          {/* Actions */}
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center gap-1">
+                              {[
+                                { icon: Eye, href: `/leads/${lead._id}`, cls: 'text-yellow-600 dark:text-yellow-400' },
+                                { icon: Pencil, onClick: () => setEditLead(lead), cls: 'text-gray-500 dark:text-gray-400' },
+                                { icon: Trash2, onClick: () => setDeleteId(lead._id), cls: 'text-red-500' },
+                              ].map(({ icon: Icon, href, onClick, cls }, i) => {
+                                const base = `w-7 h-7 rounded-lg flex items-center justify-center bg-white dark:bg-[#1e1b16] border border-gray-200 dark:border-white/[0.09] transition-all hover:border-gray-300 dark:hover:border-white/20 cursor-pointer flex-shrink-0 ${cls}`;
+                                return href
+                                  ? <Link key={i} href={href} className={base}><Icon size={13} /></Link>
+                                  : <button key={i} onClick={onClick} className={base}><Icon size={13} /></button>;
+                              })}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3.5 border-t border-gray-200 dark:border-white/[0.09]">
+                    <p className="text-xs font-medium text-gray-400 dark:text-gray-500">Page {page} of {totalPages}</p>
+                    <div className="flex gap-2">
+                      <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="btn-secondary px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-40">Previous</button>
+                      <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer disabled:opacity-40">Next</button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -404,7 +494,7 @@ export default function LeadsPage() {
         <div className="flex gap-3 overflow-x-auto pb-2">
           {STAGES.map(stage => {
             const cards = leads.filter(l => l.stage === stage);
-            const cfg   = STAGE_CFG[stage];
+            const cfg = STAGE_CFG[stage];
             return (
               <div
                 key={stage}
@@ -431,40 +521,35 @@ export default function LeadsPage() {
                     return (
                       <div
                         key={lead._id}
-                        className="bg-white dark:bg-[#1e1b16] rounded-xl p-3"
-                        style={{ border: `1px solid ${isOverdue ? 'rgba(220,38,38,0.4)' : ''}` }}
+                        className={`bg-white dark:bg-[#1e1b16] rounded-xl p-3 ${isOverdue ? '' : 'border border-gray-200 dark:border-white/[0.09]'}`}
+                        style={isOverdue ? { border: '1px solid rgba(220,38,38,0.4)' } : {}}
                       >
-                        {!isOverdue && <div className="absolute inset-0 rounded-xl pointer-events-none" />}
-                        {/* use className for border to get dark mode */}
-                        <div className={`rounded-xl p-3 -m-3 ${isOverdue ? '' : 'border border-gray-200 dark:border-white/[0.09]'}`}
-                          style={isOverdue ? { border:'1px solid rgba(220,38,38,0.4)', borderRadius:12, padding:12 } : {}}>
-                          <p className="font-display font-bold text-[15px] text-gray-800 dark:text-white tracking-tight leading-none mb-1">{lead.name}</p>
-                          {lead.referenceName && <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{lead.referenceName}</p>}
-                          <div className="flex items-center justify-between mt-2">
-                            {lead.budget && <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{fmt(lead.budget)}</span>}
-                            {lead.followUpDate && (
-                              <span className={`flex items-center gap-1 text-[11px] font-semibold ${isOverdue ? 'text-red-600' : 'text-gray-400 dark:text-gray-500'}`}>
-                                <Calendar size={10} />{fmtD(lead.followUpDate)}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-1 mt-2">
-                            <Link href={`/leads/${lead._id}`}
-                              className="flex-1 flex items-center justify-center py-1.5 rounded-lg text-xs font-bold no-underline transition-colors"
-                              style={{ background:'var(--gold-glass,rgba(232,184,75,0.12))', border:'1.5px solid rgba(232,184,75,0.5)', color:'var(--gold,#e8b84b)' }}>
-                              View
-                            </Link>
-                            <button
-                              onClick={() => {
-                                const idx  = STAGES.indexOf(lead.stage);
-                                const next = STAGES[idx + 1];
-                                if (next && !['Converted','Lost'].includes(next)) handleStageChange(lead._id, next);
-                              }}
-                              className="flex-1 flex items-center justify-center py-1.5 rounded-lg text-xs font-bold bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] text-gray-500 dark:text-gray-400 cursor-pointer transition-colors"
-                            >
-                              <ArrowRight size={11} />
-                            </button>
-                          </div>
+                        <p className="font-display font-bold text-[15px] text-gray-800 dark:text-white tracking-tight leading-none mb-1">{lead.name}</p>
+                        {lead.referenceName && <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{lead.referenceName}</p>}
+                        <div className="flex items-center justify-between mt-2">
+                          {lead.budget && <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{fmt(lead.budget)}</span>}
+                          {lead.followUpDate && (
+                            <span className={`flex items-center gap-1 text-[11px] font-semibold ${isOverdue ? 'text-red-600' : 'text-gray-400 dark:text-gray-500'}`}>
+                              <Calendar size={10} />{fmtD(lead.followUpDate)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-1 mt-2">
+                          <Link href={`/leads/${lead._id}`}
+                            className="flex-1 flex items-center justify-center py-1.5 rounded-lg text-xs font-bold no-underline transition-colors"
+                            style={{ background: 'var(--gold-glass,rgba(232,184,75,0.12))', border: '1.5px solid rgba(232,184,75,0.5)', color: 'var(--gold,#e8b84b)' }}>
+                            View
+                          </Link>
+                          <button
+                            onClick={() => {
+                              const idx = STAGES.indexOf(lead.stage);
+                              const next = STAGES[idx + 1];
+                              if (next && !['Converted', 'Lost'].includes(next)) handleStageChange(lead._id, next);
+                            }}
+                            className="flex-1 flex items-center justify-center py-1.5 rounded-lg text-xs font-bold bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] text-gray-500 dark:text-gray-400 cursor-pointer transition-colors"
+                          >
+                            <ArrowRight size={11} />
+                          </button>
                         </div>
                       </div>
                     );

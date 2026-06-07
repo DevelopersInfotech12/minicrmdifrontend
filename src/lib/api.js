@@ -78,6 +78,7 @@ export const projectsApi = {
   delete: (id) => api.delete(`/projects/${id}`),
   getRecurringDue: () => api.get('/projects/recurring/due'),
   getRecurringByClient: () => api.get('/projects/recurring/clients'),
+  getClientRecurring:   () => api.get('/projects/recurring/clients'),
 };
 
 export const leadsApi = {
@@ -154,6 +155,24 @@ export const employeesApi = {
   update: (id, data) => api.put(`/employees/${id}`, data),
   delete: (id) => api.delete(`/employees/${id}`),
   toggleStatus: (id) => api.patch(`/employees/${id}/toggle`),
+};
+
+export const payrollApi = {
+  getAll:       (params = {}) => api.get('/payroll', { params }),
+  getStats:     (year)        => api.get('/payroll/stats', { params: { year } }),
+  getById:      (id)          => api.get(`/payroll/${id}`),
+  create:       (data)        => api.post('/payroll', data),
+  bulkGenerate: (data)        => api.post('/payroll/bulk', data),
+  update:       (id, data)    => api.put(`/payroll/${id}`, data),
+  markAsPaid:   (id, data)    => api.patch(`/payroll/${id}/pay`, data),
+  delete:       (id)          => api.delete(`/payroll/${id}`),
+};
+
+export const activityApi = {
+  getByProject: (projectId, params = {}) => api.get(`/activity/project/${projectId}`, { params }),
+  getByClient:  (clientId,  params = {}) => api.get(`/activity/client/${clientId}`,   { params }),
+  getByPage:    (pageName,  params = {}) => api.get(`/activity/page/${pageName}`,      { params }),
+  getAll:       (params = {})            => api.get('/activity/all',                   { params }),
 };
 
 export default api;

@@ -17,7 +17,7 @@ const nav = [
   { href:'/notes',     label:'Notes',      icon:StickyNote },
   { href:'/calendar',  label:'Calendar',   icon:CalendarDays },
   { href:'/employees', label:'Employees',  icon:UserCheck },
-  { href:'/payroll',   label:'Payroll',    icon:Banknote, badge:'Soon' },
+  { href:'/payroll',   label:'Payroll',    icon:Banknote },
 ];
 
 export default function Sidebar() {
@@ -42,7 +42,7 @@ export default function Sidebar() {
     window.location.href = '/login';
   };
 
-  const sidebarBg    = isDark ? '#0f0e0c' : '#0981e4bd';
+  const sidebarBg    = isDark ? '#0f0e0c' : '#072041';
   const activeColor  = isDark ? '#e8b84b' : '#e6e6eb';
   const activeBg     = isDark ? 'rgba(232,184,75,0.12)' : '#006cc465';
   const activeBorder = isDark ? 'rgba(232,184,75,0.25)' : 'rgba(129,140,248,0.3)';
@@ -52,7 +52,7 @@ export default function Sidebar() {
     <aside style={{ width:240, flexShrink:0, background:sidebarBg, borderRight:'1px solid rgba(255,255,255,0.06)', display:'flex', flexDirection:'column', height:'100%' }}>
       <div style={{ height:2, background: isDark
         ? 'linear-gradient(90deg,#b88c2a,#e8b84b,#f5cc6a,#e8b84b)'
-        : 'linear-gradient(90deg,#4f46e5,#818cf8,#a5b4fc,#818cf8)'
+        : 'linear-gradient(90deg,#b88c2a,#e8b84b,#f5cc6a,#e8b84b)'
       }} />
 
       {/* Logo */}
@@ -71,7 +71,6 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-2.5 py-3 overflow-y-auto">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-white px-2.5 pb-2">Menu</p>
         {nav.map(({ href, label, icon:Icon, badge }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
@@ -95,9 +94,9 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="px-2.5 py-3 border-t border-white/06 space-y-2">
+      <div className="px-2.5 py-2.5 border-t border-white/06 space-y-2">
         <button onClick={toggle}
-          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl bg-white/06 border border-white/08 cursor-pointer transition-all hover:bg-white/10">
+          className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl bg-white/06 border border-white/08 cursor-pointer transition-all hover:bg-white/10">
           {isDark ? <Sun size={15} color="#e8b84b" /> : <Moon size={15} color="#ffffff" />}
           <span className="text-xs font-bold text-white flex-1 text-left">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
           <div className="w-9 h-5 rounded-full relative transition-all" style={{ background: isDark ? '#e8b84b' : '#6366f1' }}>
@@ -105,7 +104,7 @@ export default function Sidebar() {
           </div>
         </button>
 
-        <Link href="/profile" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/06 border border-white/08 no-underline hover:bg-white/10 transition-all">
+        <Link href="/profile" className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/06 border border-white/08 no-underline hover:bg-white/10 transition-all">
           {user?.avatar
             ? <img src={user.avatar} alt="" className="w-7 h-7 rounded-lg object-cover flex-shrink-0" />
             : <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-[#0a0a0a] flex-shrink-0"

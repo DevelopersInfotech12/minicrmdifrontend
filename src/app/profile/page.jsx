@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { User, Mail, Lock, LogOut, Shield, Chrome, Eye, EyeOff, Save, Camera } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
 
-const inputCls = "w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-50 dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-gold-500 dark:focus:border-gold-400 focus:ring-2 focus:ring-gold-500/20 transition-all";
+const inputCls = "w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-50 dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-[#e8b84b] dark:focus:border-[#e8b84b] focus:ring-2 focus:ring-[#e8b84b]/20 transition-all";
 const labelCls = "block text-[11px] font-bold uppercase tracking-widest text-gray-500 dark:text-[#c8b896] mb-1.5";
 
 export default function ProfilePage() {
@@ -45,7 +45,7 @@ export default function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await authApi.updateProfile({ name, email });
+      const res = await authApi.updateProfile({ name });
       setUser(res.data.data.user);
       toast.success('Profile updated!');
     } catch (err) {
@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-[#e8b84b] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -100,19 +100,19 @@ export default function ProfilePage() {
             <div className="relative mb-4">
               {user?.avatar ? (
                 <img src={user.avatar} alt={user.name}
-                  className="w-20 h-20 rounded-2xl object-cover border-2 border-gold-400/30" />
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-[#e8b84b]/30" />
               ) : (
-                <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-[#0a0a0a] font-display"
-                  style={{ background:'linear-gradient(135deg,#e8b84b,#b88c2a)' }}>
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white font-display"
+                  style={{ background:'linear-gradient(135deg,#6366f1,#4338ca)' }}>
                   {initials}
                 </div>
               )}
             </div>
             <h2 className="font-display font-bold text-lg text-gray-900 dark:text-white">{user?.name}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">{user?.email}</p>
-            <div className="flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-gold-400/10 border border-gold-400/20">
-              <Shield size={11} className="text-gold-600 dark:text-gold-400" />
-              <span className="text-xs font-bold text-gold-600 dark:text-gold-400 uppercase tracking-wide">Admin</span>
+            <div className="flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-[#e8b84b]/10 border border-[#e8b84b]/20">
+              <Shield size={11} className="text-[#c4922a] dark:text-[#e8b84b]" />
+              <span className="text-xs font-bold text-[#c4922a] dark:text-[#e8b84b] uppercase tracking-wide">Admin</span>
             </div>
           </div>
 
@@ -172,8 +172,8 @@ export default function ProfilePage() {
           {/* Edit Profile */}
           <div className="bg-gray-100 dark:bg-[#161410] border border-gray-200 dark:border-white/09 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-white/08">
-              <div className="w-9 h-9 rounded-xl bg-gold-400/12 border border-gold-400/20 flex items-center justify-center">
-                <User size={16} className="text-gold-600 dark:text-gold-400" />
+              <div className="w-9 h-9 rounded-xl bg-[#e8b84b]/12 border border-[#e8b84b]/20 flex items-center justify-center">
+                <User size={16} className="text-[#c4922a] dark:text-[#e8b84b]" />
               </div>
               <div>
                 <h3 className="font-display font-bold text-base text-gray-900 dark:text-white">Edit Profile</h3>
@@ -188,12 +188,13 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className={labelCls}>Email Address</label>
-                  <input type="email" className={inputCls} value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" />
+                  <input type="email" className={`${inputCls} opacity-60 cursor-not-allowed`} value={email} readOnly tabIndex={-1} />
+                  <p className="text-[11px] text-gray-400 dark:text-gray-600 mt-1">Email cannot be changed</p>
                 </div>
               </div>
               <div className="flex justify-end pt-2">
                 <button type="submit" disabled={saving}
-                  className="btn-gold inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm cursor-pointer disabled:opacity-60">
+                  className=" inline-flex items-center bg-indigo-500 text-white gap-2 px-5 py-2.5 rounded-xl text-sm cursor-pointer disabled:opacity-60">
                   <Save size={14} />
                   {saving ? 'Saving…' : 'Save Changes'}
                 </button>
@@ -205,8 +206,8 @@ export default function ProfilePage() {
           {user?.password !== null && (
             <div className="bg-gray-100 dark:bg-[#161410] border border-gray-200 dark:border-white/09 rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-white/08">
-                <div className="w-9 h-9 rounded-xl bg-purple-400/12 border border-purple-400/20 flex items-center justify-center">
-                  <Lock size={16} className="text-purple-500" />
+                <div className="w-9 h-9 rounded-xl bg-gray-50 text-white border border-indigo-400/20 flex items-center justify-center">
+                  <Lock size={16} className="text-[#c4922a] dark:text-[#e8b84b]" />
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-base text-gray-900 dark:text-white">Change Password</h3>
@@ -249,7 +250,7 @@ export default function ProfilePage() {
                 <div className="flex justify-end pt-2">
                   <button type="submit" disabled={changingPass}
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold
-                    bg-purple-500 hover:bg-purple-600 text-white border-none cursor-pointer transition-all disabled:opacity-60">
+                    bg-indigo-500 hover:bg-purple-600 text-white border-none cursor-pointer transition-all disabled:opacity-60">
                     <Lock size={14} />
                     {changingPass ? 'Changing…' : 'Change Password'}
                   </button>

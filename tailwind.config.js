@@ -4,12 +4,13 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
-      fontFamily: {
-        display: ['Syne', 'system-ui', 'sans-serif'],
-        sans: ['Poppins', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-        zoho: ['"DM Sans"', 'sans-serif'],
-      },
+    fontFamily: {
+  zoho: ['"DM Sans"', 'sans-serif'],
+  display: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+  sans: ['Inter', 'system-ui', 'sans-serif'],
+  mono: ['"JetBrains Mono"', 'monospace'],
+  poppins: ['Poppins', 'system-ui', 'sans-serif'],
+},
       colors: {
         gold: {
           50: '#fdf9ee',

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import PageHeader from '@/components/ui/PageHeader';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import ActivityLog from '@/components/ui/ActivityLog';
 
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -32,7 +33,7 @@ const PRIORITY_CFG = {
   Low:    { color:'#10b981', dot:'bg-emerald-500'},
 };
 
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 dark:focus:border-gold-400 focus:ring-2 focus:ring-indigo-500/15 transition-all";
+const inputCls = "w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 dark:focus:border-[#e8b84b] focus:ring-2 focus:ring-indigo-500/15 transition-all";
 const labelCls = "block text-[11px] font-bold uppercase tracking-widest text-gray-500 dark:text-[#c8b896] mb-1.5";
 const selectCls = `${inputCls} cursor-pointer`;
 
@@ -603,6 +604,11 @@ export default function CalendarPage() {
       <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)}
         onConfirm={handleDelete} loading={deleting}
         title="Delete Meeting" message="Delete this meeting permanently?" />
+
+      {/* ── Activity Log ── */}
+      <div className="mt-8">
+        <ActivityLog mode="page" id="calendar" maxHeight="400px" />
+      </div>
     </div>
   );
 }

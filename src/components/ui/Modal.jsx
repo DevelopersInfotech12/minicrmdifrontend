@@ -20,15 +20,15 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
       <div className={`relative w-full ${sizes[size]} max-h-[calc(100vh-40px)] flex flex-col animate-scale-in
         bg-white dark:bg-[#1e1b16] border border-gray-200 dark:border-white/10
         rounded-2xl shadow-2xl overflow-hidden`}>
-        {/* Gold top line */}
-        <div className="h-0.5 bg-gradient-to-r from-transparent via-gold-400 to-transparent flex-shrink-0" />
+        {/* Gold top strip — consistent across all modals */}
+        <div className="h-0.5 bg-gradient-to-r from-transparent via-[#e8b84b] to-transparent flex-shrink-0" />
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/08 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/[0.08] flex-shrink-0">
           <h2 className="font-display font-bold text-xl text-gray-900 dark:text-white tracking-tight">{title}</h2>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-white/08
-            text-gray-500 dark:text-gray-400 hover:text-gold-600 dark:hover:text-gold-400
-            hover:border-gold-400 border border-transparent transition-all duration-150">
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-white/[0.08]
+            text-gray-500 dark:text-gray-400 hover:text-[#e8b84b] dark:hover:text-[#e8b84b]
+            hover:border-[#e8b84b] border border-transparent transition-all duration-150">
             <X size={14} />
           </button>
         </div>

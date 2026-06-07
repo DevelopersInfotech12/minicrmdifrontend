@@ -24,7 +24,7 @@ export default function NoteForm({ note, projectId, onSuccess, onCancel }) {
     setLoading(true);
     try {
       if (note) { await notesApi.update(note._id, { content }); toast.success('Note updated!'); }
-      else       { await notesApi.create({ content, project: projectId }); toast.success('Note added!'); }
+      else { await notesApi.create({ content, project: projectId }); toast.success('Note added!'); }
       onSuccess();
     } catch (err) { toast.error(err?.response?.data?.message || 'Something went wrong'); }
     finally { setLoading(false); }
@@ -91,7 +91,7 @@ export default function NoteForm({ note, projectId, onSuccess, onCancel }) {
           {/* Bottom bar: icon + char count */}
           <div className="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-[#1e1b16] border-t border-gray-200 dark:border-white/[0.06]">
             <div className="flex items-center gap-1.5">
-              <StickyNote size={12} className="text-gray-300 dark:text-gray-600"/>
+              <StickyNote size={12} className="text-gray-300 dark:text-gray-600" />
               <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
                 {note ? 'Editing note' : 'New note'}
               </span>
@@ -115,15 +115,13 @@ export default function NoteForm({ note, projectId, onSuccess, onCancel }) {
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black"
           style={{
-            background: 'var(--gold, #e8b84b)',
-            color: '#0a0a0a',
-            border: '1.5px solid rgba(232,184,75,0.6)',
-            boxShadow: '0 2px 8px rgba(232,184,75,0.25)',
+            border: 'none',
+            boxShadow: '0 2px 8px rgba(99,102,241,0.25)',
           }}
         >
-          <StickyNote size={13}/>
+          <StickyNote size={13} />
           {loading ? 'Saving…' : note ? 'Update Note' : 'Add Note'}
         </button>
       </div>

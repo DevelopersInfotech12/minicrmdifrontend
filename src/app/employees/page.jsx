@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { employeesApi } from '@/lib/api';
-import { Users, Plus, Search, Mail, Phone, Pencil, Trash2, ToggleLeft, Briefcase, Building2, DollarSign } from 'lucide-react';
+import { Users, Plus, Search, Mail, Phone, Pencil, Trash2, ToggleLeft, Briefcase, Building2, DollarSign, ChevronDown, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PageHeader from '@/components/ui/PageHeader';
 import Modal from '@/components/ui/Modal';
@@ -17,8 +17,75 @@ const STATUS_CFG = {
   'On Leave':{ cls:'bg-amber-50 dark:bg-amber-500/12 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30', dot:'bg-amber-400' },
 };
 
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-gold-500 dark:focus:border-gold-400 focus:ring-2 focus:ring-gold-500/20 transition-all";
+const inputCls = "w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 dark:focus:border-[#e8b84b] focus:ring-2 focus:ring-indigo-500/20 transition-all";
 const labelCls = "block text-[11px] font-bold uppercase tracking-widest text-gray-500 dark:text-[#c8b896] mb-1.5";
+
+// ── Custom Select ─────────────────────────────────────────────────────────────
+function CustomSelect({ value, onChange, options, placeholder = 'Select…' }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selected = options.find(o => (o.value ?? o) === value);
+  const displayLabel = selected ? (selected.label ?? selected) : null;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className={`${inputCls} flex items-center justify-between gap-2 text-left ${!displayLabel ? 'text-gray-400 dark:text-gray-600' : ''}`}
+      >
+        <span className="truncate flex-1">{displayLabel || placeholder}</span>
+        <ChevronDown
+          size={14}
+          className="flex-shrink-0 text-gray-400 transition-transform duration-200"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute z-50 mt-1.5 w-full rounded-xl overflow-hidden shadow-lg"
+          style={{
+            border: '1.5px solid rgba(99,102,241,0.3)',
+            background: 'var(--dropdown-bg, #fff)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          }}
+        >
+          <style>{`:root { --dropdown-bg: #fff; } .dark { --dropdown-bg: #1a1714; }`}</style>
+          <div className="py-1 max-h-52 overflow-y-auto">
+            {options.map((opt) => {
+              const val = opt.value ?? opt;
+              const lbl = opt.label ?? opt;
+              const isActive = val === value;
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => { onChange(val); setOpen(false); }}
+                  className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-[13px] font-medium text-left transition-colors hover:bg-gray-100 dark:hover:bg-white/[0.05]"
+                  style={{
+                    background: isActive ? 'rgba(99,102,241,0.1)' : undefined,
+                    color: isActive ? '#6366f1' : 'inherit',
+                  }}
+                >
+                  <span className="truncate">{lbl}</span>
+                  {isActive && <Check size={13} className="flex-shrink-0 text-indigo-500" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function EmployeeForm({ employee, onSuccess, onCancel }) {
   const [form, setForm] = useState({
@@ -62,25 +129,39 @@ function EmployeeForm({ employee, onSuccess, onCancel }) {
       <div className="grid grid-cols-3 gap-4">
         <div><label className={labelCls}>Join Date</label><input type="date" className={inputCls} value={form.joinDate} onChange={e=>set('joinDate',e.target.value)} /></div>
         <div><label className={labelCls}>Salary (₹)</label><input type="number" className={inputCls} placeholder="50000" value={form.salary} onChange={e=>set('salary',e.target.value)} /></div>
-        <div><label className={labelCls}>Salary Type</label>
-          <select className={inputCls+' cursor-pointer'} value={form.salaryType} onChange={e=>set('salaryType',e.target.value)}>
-            {['Monthly','Hourly','Contract'].map(t=><option key={t}>{t}</option>)}
-          </select>
+        <div>
+          <label className={labelCls}>Salary Type</label>
+          <CustomSelect
+            value={form.salaryType}
+            onChange={v => set('salaryType', v)}
+            options={['Monthly','Hourly','Contract']}
+            placeholder="Select type…"
+          />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div><label className={labelCls}>Status</label>
-          <select className={inputCls+' cursor-pointer'} value={form.status} onChange={e=>set('status',e.target.value)}>
-            {['Active','Inactive','On Leave'].map(s=><option key={s}>{s}</option>)}
-          </select>
+        <div>
+          <label className={labelCls}>Status</label>
+          <CustomSelect
+            value={form.status}
+            onChange={v => set('status', v)}
+            options={['Active','Inactive','On Leave']}
+            placeholder="Select status…"
+          />
         </div>
         <div><label className={labelCls}>Skills (comma separated)</label><input className={inputCls} placeholder="React, Node.js, MongoDB" value={form.skills} onChange={e=>set('skills',e.target.value)} /></div>
       </div>
       <div><label className={labelCls}>Address</label><input className={inputCls} placeholder="City, State" value={form.address} onChange={e=>set('address',e.target.value)} /></div>
       <div><label className={labelCls}>Notes</label><textarea className={inputCls} rows={2} placeholder="Additional notes…" value={form.notes} onChange={e=>set('notes',e.target.value)} /></div>
       <div className="flex gap-3 justify-end pt-2">
-        <button type="button" onClick={onCancel} className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 dark:bg-white/08 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/12 cursor-pointer hover:border-gold-400 transition-all">Cancel</button>
-        <button type="submit" disabled={loading} className="btn-gold px-5 py-2.5 rounded-xl text-sm cursor-pointer disabled:opacity-60">{loading ? 'Saving…' : employee ? 'Update' : 'Add Employee'}</button>
+        <button type="button" onClick={onCancel}
+          className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 dark:bg-white/08 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/12 cursor-pointer hover:border-indigo-400 transition-all">
+          Cancel
+        </button>
+        <button type="submit" disabled={loading}
+          className="px-5 py-2.5 rounded-xl text-sm font-semibold cursor-pointer disabled:opacity-60 transition-all bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black border-none">
+          {loading ? 'Saving…' : employee ? 'Update' : 'Add Employee'}
+        </button>
       </div>
     </form>
   );
@@ -121,17 +202,23 @@ export default function EmployeesPage() {
     catch { toast.error('Failed'); }
   };
 
-  // Stats
-  const active   = employees.filter(e=>e.status==='Active').length;
-  const onLeave  = employees.filter(e=>e.status==='On Leave').length;
+  const active      = employees.filter(e=>e.status==='Active').length;
+  const onLeave     = employees.filter(e=>e.status==='On Leave').length;
   const totalSalary = employees.filter(e=>e.status==='Active').reduce((s,e)=>s+e.salary,0);
+
+  const statusFilterOptions = [
+    { value: '', label: 'All Status' },
+    { value: 'Active', label: 'Active' },
+    { value: 'Inactive', label: 'Inactive' },
+    { value: 'On Leave', label: 'On Leave' },
+  ];
 
   return (
     <div>
       <PageHeader title="Employees" subtitle={`${total} team member${total!==1?'s':''}`}
         action={
           <button onClick={()=>{setEditEmp(null);setShowForm(true);}}
-            className="btn-gold inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm cursor-pointer">
+            className="bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold cursor-pointer border-none transition-all">
             <Plus size={15} strokeWidth={2.5}/> Add Employee
           </button>
         }
@@ -140,12 +227,12 @@ export default function EmployeesPage() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-3.5 mb-6">
         {[
-          { label:'Total',        value:total,    color:'#6366f1', icon:Users },
-          { label:'Active',       value:active,   color:'#10b981', icon:Users },
-          { label:'On Leave',     value:onLeave,  color:'#f59e0b', icon:Users },
+          { label:'Total',         value:total,            color:'#6366f1', icon:Users },
+          { label:'Active',        value:active,           color:'#10b981', icon:Users },
+          { label:'On Leave',      value:onLeave,          color:'#f59e0b', icon:Users },
           { label:'Monthly Salary',value:fmt(totalSalary), color:'#e8b84b', icon:DollarSign },
         ].map(({label,value,color,icon:Icon})=>(
-          <div key={label} className="bg-gray-100 dark:bg-[#161410] border border-gray-200 dark:border-white/09 rounded-2xl p-4 flex items-center gap-3">
+          <div key={label} className=" dark:bg-[#161410] border border-gray-200 dark:border-white/09 rounded-2xl p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border"
               style={{ background:`${color}15`, borderColor:`${color}25` }}>
               <Icon size={18} color={color}/>
@@ -162,31 +249,42 @@ export default function EmployeesPage() {
       <div className="flex gap-3 mb-5">
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
-          <input className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 transition-all"
-            placeholder="Search by name, email, role…" value={search} onChange={e=>{setSearch(e.target.value);}} />
+          <input
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+            placeholder="Search by name, email, role…" value={search} onChange={e=>setSearch(e.target.value)}
+          />
         </div>
-        <select className="px-4 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-[#1a1714] border border-gray-200 dark:border-white/12 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 cursor-pointer transition-all"
-          value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
-          <option value="">All Status</option>
-          <option>Active</option><option>Inactive</option><option>On Leave</option>
-        </select>
+        <div className="w-40">
+          <CustomSelect
+            value={filterStatus}
+            onChange={setFilterStatus}
+            options={statusFilterOptions}
+            placeholder="All Status"
+          />
+        </div>
       </div>
 
       {/* Table */}
       <div className="bg-gray-100 dark:bg-[#161410] border border-gray-200 dark:border-white/09 rounded-2xl overflow-hidden shadow-card dark:shadow-card-dark">
         {loading ? <TableSkeleton rows={5}/> : employees.length===0 ? (
           <EmptyState icon={Users} title="No employees found" description="Add your first team member."
-            action={<button onClick={()=>setShowForm(true)} className="btn-gold inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm cursor-pointer"><Plus size={14}/>Add Employee</button>}/>
+            action={
+              <button onClick={()=>setShowForm(true)}
+                className="bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer border-none">
+                <Plus size={14}/> Add Employee
+              </button>
+            }
+          />
         ) : (
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-gray-200 dark:bg-[#0f0e0c] border-b border-gray-300 dark:border-white/08">
+              <tr className="bg-gray-100 dark:bg-[#0f0e0c] border-b border-gray-300 dark:border-white/08">
                 {['Employee','Contact','Role','Salary','Status','Actions'].map(h=>(
                   <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-gray-500 dark:text-white uppercase tracking-widest">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-white/06">
+            <tbody className="divide-y bg-white dark:bg-[#161410] divide-gray-200 dark:divide-white/06">
               {employees.map(emp=>{
                 const sc = STATUS_CFG[emp.status]||STATUS_CFG.Active;
                 const initials = emp.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
@@ -194,7 +292,7 @@ export default function EmployeesPage() {
                   <tr key={emp._id} className="hover:bg-gray-50 dark:hover:bg-[#1e1b16] transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-display font-bold text-sm text-[#0a0a0a]"
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-display font-bold text-sm text-white"
                           style={{ background:'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>{initials}</div>
                         <div>
                           <p className="text-[15px] font-bold text-gray-900 dark:text-white leading-none">{emp.name}</p>
@@ -204,10 +302,10 @@ export default function EmployeesPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="space-y-1">
-                        <a href={`mailto:${emp.email}`} className="flex items-center gap-1.5 text-[13px] font-medium text-gray-600 dark:text-gray-300 no-underline hover:text-gold-600">
+                        <a href={`mailto:${emp.email}`} className="flex items-center gap-1.5 text-[13px] font-medium text-gray-600 dark:text-gray-300 no-underline hover:text-indigo-500 transition-colors">
                           <Mail size={11} className="text-gray-400"/>{emp.email}
                         </a>
-                        {emp.phone && <a href={`tel:${emp.phone}`} className="flex items-center gap-1.5 text-[13px] font-medium text-gray-600 dark:text-gray-300 no-underline hover:text-gold-600">
+                        {emp.phone && <a href={`tel:${emp.phone}`} className="flex items-center gap-1.5 text-[13px] font-medium text-gray-600 dark:text-gray-300 no-underline hover:text-indigo-500 transition-colors">
                           <Phone size={11} className="text-gray-400"/>{emp.phone}
                         </a>}
                       </div>
@@ -228,15 +326,15 @@ export default function EmployeesPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1.5">
                         <button onClick={()=>{setEditEmp(emp);setShowForm(true);}}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-white/08 border border-gray-200 dark:border-white/12 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-gold-400 transition-all">
+                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-white/08 border border-gray-200 dark:border-white/12 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-indigo-400 hover:text-indigo-500 transition-all">
                           <Pencil size={13}/>
                         </button>
                         <button onClick={()=>handleToggle(emp._id)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-white/08 border border-gray-200 dark:border-white/12 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-gold-400 transition-all">
+                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-white/08 border border-gray-200 dark:border-white/12 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-indigo-400 hover:text-indigo-500 transition-all">
                           <ToggleLeft size={13}/>
                         </button>
                         <button onClick={()=>setDeleteId(emp._id)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-white/08 border border-gray-200 dark:border-white/12 text-red-400 cursor-pointer hover:border-red-400 transition-all">
+                          className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-white/08 border border-gray-200 dark:border-white/12 text-red-400 cursor-pointer hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
                           <Trash2 size={13}/>
                         </button>
                       </div>

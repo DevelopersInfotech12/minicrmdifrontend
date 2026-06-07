@@ -20,6 +20,7 @@ import InvoiceUploader from '@/components/payments/InvoiceUploader';
 import TaskManager from '@/components/tasks/TaskManager';
 import MeetingsList from '@/components/meetings/MeetingsList';
 import { Skeleton } from '@/components/ui/Skeleton';
+import ActivityLog from '@/components/ui/ActivityLog';
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
@@ -84,6 +85,7 @@ export default function ProjectDetailPage() {
     { key: 'meetings',   label: '📅 Meetings'   },
     { key: 'notes',      label: `📝 Notes (${notes.length})` },
     { key: 'overview',   label: '📋 Overview'   },
+    { key: 'activity',   label: '📜 Activity'   },
   ];
 
   const SERVICE_EMOJI  = { "Website Development":"🌐","App Development":"📱","SEO":"🔍","Social Media Marketing":"📣","Google Ads":"🔎","Meta Ads":"📘","Branding / Design":"🎨","Content Writing":"✍️" };
@@ -399,6 +401,11 @@ export default function ProjectDetailPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* ── Activity Tab ── */}
+      {activeTab === 'activity' && (
+        <ActivityLog mode="project" id={id} maxHeight="500px" />
       )}
 
       {/* ── Modals ── */}

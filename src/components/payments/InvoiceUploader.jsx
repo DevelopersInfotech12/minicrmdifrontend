@@ -12,19 +12,19 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 const fmtDate = (d) => {
   const dt = new Date(d);
   const day = dt.getDate();
-  const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()];
+  const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][dt.getMonth()];
   return `${day} ${mon} ${dt.getFullYear()}`;
 };
-const fmtSize = (b) => b < 1024*1024 ? (b/1024).toFixed(1)+' KB' : (b/(1024*1024)).toFixed(1)+' MB';
+const fmtSize = (b) => b < 1024 * 1024 ? (b / 1024).toFixed(1) + ' KB' : (b / (1024 * 1024)).toFixed(1) + ' MB';
 
 function UploadModal({ projectId, onSuccess, onCancel }) {
   const inputRef = useRef();
-  const [file, setFile]               = useState(null);
-  const [label, setLabel]             = useState('');
-  const [milestones, setMilestones]   = useState([]);
+  const [file, setFile] = useState(null);
+  const [label, setLabel] = useState('');
+  const [milestones, setMilestones] = useState([]);
   const [milestoneId, setMilestoneId] = useState('');
-  const [uploading, setUploading]     = useState(false);
-  const [drag, setDrag]               = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [drag, setDrag] = useState(false);
 
   useEffect(() => {
     milestonesApi.getByProject(projectId)
@@ -99,8 +99,12 @@ function UploadModal({ projectId, onSuccess, onCancel }) {
       </div>
 
       <div className="flex gap-3 justify-end pt-1">
-        <button onClick={onCancel} disabled={uploading} className="px-4 py-2.5 rounded-xl text-sm font-bold border border-gray-200 dark:border-white/[0.09] bg-white dark:bg-[#1e1b16] text-gray-600 dark:text-gray-300 hover:border-gray-300 transition-all cursor-pointer">Cancel</button>
-        <button onClick={handleUpload} disabled={!file || uploading} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold cursor-pointer disabled:opacity-50 transition-all" style={{ background: '#e8b84b', color: '#0a0a0a' }}>
+        <button onClick={onCancel} disabled={uploading}
+          className="px-4 py-2.5 rounded-xl text-sm font-bold border border-gray-200 dark:border-white/[0.09] bg-white dark:bg-[#1e1b16] text-gray-600 dark:text-gray-300 hover:border-gray-300 transition-all cursor-pointer">
+          Cancel
+        </button>
+        <button onClick={handleUpload} disabled={!file || uploading}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold cursor-pointer disabled:opacity-50 transition-all bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black border-none">
           <Upload size={14} />{uploading ? 'Uploading…' : 'Upload Invoice'}
         </button>
       </div>
@@ -109,11 +113,11 @@ function UploadModal({ projectId, onSuccess, onCancel }) {
 }
 
 export default function InvoiceUploader({ projectId }) {
-  const [invoices, setInvoices]       = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [showUpload, setShowUpload]   = useState(false);
-  const [deleteId, setDeleteId]       = useState(null);
-  const [deleting, setDeleting]       = useState(false);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showUpload, setShowUpload] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState(null);
 
   const fetchInvoices = async () => {
@@ -161,11 +165,11 @@ export default function InvoiceUploader({ projectId }) {
         </div>
         <button
           onClick={() => setShowUpload(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold cursor-pointer border-none transition-all"
-          style={{ background: 'var(--gold, #e8b84b)', color: '#0a0a0a' }}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold cursor-pointer border-none transition-all bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black"
         >
           <Plus size={13} /> Upload Invoice
         </button>
+
       </div>
 
       <div className="bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.06] rounded-2xl shadow-card dark:shadow-card-dark overflow-hidden">

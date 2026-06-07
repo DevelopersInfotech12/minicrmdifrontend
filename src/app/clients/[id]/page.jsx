@@ -17,6 +17,7 @@ import ClientForm from '@/components/clients/ClientForm';
 import ProjectForm from '@/components/projects/ProjectForm';
 import { Skeleton } from '@/components/ui/Skeleton';
 import MeetingsList from '@/components/meetings/MeetingsList';
+import ActivityLog from '@/components/ui/ActivityLog';
 import api, { invoicesApi } from '@/lib/api'; // ← api default import for download
 
 const fmt  = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
@@ -38,14 +39,14 @@ const PROJECT_GRADIENT = {
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, icon: Icon, gradient }) {
   return (
-    <div className="bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl p-5 relative overflow-hidden shadow-card dark:shadow-card-dark group hover:border-gray-300 dark:hover:border-white/20 transition-all">
+    <div className="bg-gray-10 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl p-5 relative overflow-hidden shadow-card dark:shadow-card-dark group hover:border-gray-300 dark:hover:border-white/20 transition-all">
       <div style={{ position:'absolute', top:-20, right:-20, width:80, height:80, borderRadius:'50%',  }}/>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 flex-shrink-0"
         style={{ background:`linear-gradient(135deg,${gradient})` }}>
         <Icon size={17} className="text-white"/>
       </div>
       <p className="font-display font-black text-2xl text-gray-900 dark:text-white tracking-tight leading-none">{value}</p>
-      <p className="text-[14px] font-semibold text-gray-500 dark:text-gray-400 mt-1">{label}</p>
+      <p className="font-display font-semibold text-[13px] text-gray-500 dark:text-gray-100 mt-2">{label}</p>
       {sub && <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
     </div>
   );
@@ -54,10 +55,10 @@ function StatCard({ label, value, sub, icon: Icon, gradient }) {
 // ── Section Card ─────────────────────────────────────────────────────────────
 function SectionCard({ title, action, children, className = '' }) {
   return (
-    <div className={`bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl overflow-hidden shadow-card dark:shadow-card-dark ${className}`}>
+    <div className={`bg-gray-10 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl overflow-hidden shadow-card dark:shadow-card-dark ${className}`}>
       {(title || action) && (
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-white/[0.06]">
-          {title && <h3 className="text-[14px] font-bold text-gray-800 dark:text-white">{title}</h3>}
+          {title && <h3 className="font-poppins text-[14.5px] font-bold text-gray-800 dark:text-white">{title}</h3>}
           {action}
         </div>
       )}
@@ -70,7 +71,7 @@ function SectionCard({ title, action, children, className = '' }) {
 function NotesTimeline({ notes }) {
   const [show, setShow] = useState(5);
   if (!notes?.length) return (
-    <div className="text-center py-10 bg-gray-50 dark:bg-[#161410] border-2 border-dashed border-gray-200 dark:border-white/[0.09] rounded-2xl">
+    <div className="text-center py-10 bg-gray-10 dark:bg-[#161410] border-2 border-dashed border-gray-200 dark:border-white/[0.09] rounded-2xl">
       <StickyNote size={24} className="text-gray-300 dark:text-gray-600 mx-auto mb-2"/>
       <p className="text-sm text-gray-400 dark:text-gray-500">No notes yet across any project</p>
     </div>
@@ -169,7 +170,7 @@ function InvoicesSection({ invoices }) {
   };
 
   if (!invoices?.length) return (
-    <div className="text-center py-10 bg-gray-50 dark:bg-[#161410] border-2 border-dashed border-gray-200 dark:border-white/[0.09] rounded-2xl">
+    <div className="text-center py-10 bg-gray-10 dark:bg-[#161410] border-2 border-dashed border-gray-200 dark:border-white/[0.09] rounded-2xl">
       <FileText size={22} className="text-gray-300 dark:text-gray-600 mx-auto mb-2"/>
       <p className="text-sm text-gray-400 dark:text-gray-500">No invoices uploaded yet</p>
     </div>
@@ -179,7 +180,7 @@ function InvoicesSection({ invoices }) {
     <div className="space-y-2.5">
       {invoices.map(inv => (
         <div key={inv._id}
-          className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl hover:border-gray-300 dark:hover:border-white/20 transition-all group shadow-card dark:shadow-card-dark">
+          className="flex items-center gap-3 p-4 bg-gray-10 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl hover:border-gray-300 dark:hover:border-white/20 transition-all group shadow-card dark:shadow-card-dark">
           <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 flex items-center justify-center flex-shrink-0">
             <FileText size={15} className="text-red-500 dark:text-red-400"/>
           </div>
@@ -237,12 +238,13 @@ export default function ClientProfilePage() {
   const { client, projects, payments, notes, invoices, stats, overdueMilestones, upcomingMilestones } = profile;
 
   const tabs = [
-    { key:'overview', label:'📊 Overview' },
-    { key:'projects', label:`📁 Projects (${projects.length})` },
-    { key:'payments', label:`💰 Payments (${payments.length})` },
-    { key:'meetings', label:'📅 Meetings' },
-    { key:'notes',    label:`📝 Notes (${notes.length})` },
-    { key:'invoices', label:`📄 Invoices (${invoices.length})` },
+    { key:'overview',  label:'📊 Overview' },
+    { key:'projects',  label:`📁 Projects (${projects.length})` },
+    { key:'payments',  label:`💰 Payments (${payments.length})` },
+    { key:'meetings',  label:'📅 Meetings' },
+    { key:'notes',     label:`📝 Notes (${notes.length})` },
+    { key:'invoices',  label:`📄 Invoices (${invoices.length})` },
+    { key:'activity',  label:'📜 Activity' },
   ];
 
   const initials = client.name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
@@ -325,7 +327,7 @@ export default function ClientProfilePage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div className="flex gap-1 bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] p-1 rounded-xl mb-6 w-fit flex-wrap">
+      <div className="flex gap-1 bg-gray-10 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] p-1 rounded-xl mb-6 w-fit flex-wrap">
         {tabs.map(t => (
           <button key={t.key} onClick={() => setActiveTab(t.key)}
             className="px-4 py-2 rounded-lg text-[13px] font-bold cursor-pointer border-none transition-all"
@@ -551,6 +553,11 @@ export default function ClientProfilePage() {
           </div>
           <InvoicesSection invoices={invoices}/>
         </div>
+      )}
+
+      {/* ══ ACTIVITY TAB ══ */}
+      {activeTab === 'activity' && (
+        <ActivityLog mode="client" id={id} maxHeight="520px" />
       )}
 
       {/* ── Modals ── */}

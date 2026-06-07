@@ -10,6 +10,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import EmptyState from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import PaymentForm from '@/components/payments/PaymentForm';
+import ActivityLog from '@/components/ui/ActivityLog';
 
 const fmt = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
 
@@ -71,8 +72,7 @@ function PaymentCard({ payment, onEdit, onDelete, onAdd, project }) {
             </div>
           </div>
           <button onClick={() => onAdd(project)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold cursor-pointer border-none transition-all"
-            style={{ background:'var(--gold,#e8b84b)', color:'#0a0a0a', border:'1.5px solid rgba(232,184,75,0.6)' }}>
+            className="dark:bg-[#e8b84b] bg-indigo-500 dark:text-black text-white font-semibold inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm cursor-pointer">
             <Plus size={13}/> Add Payment
           </button>
         </div>
@@ -125,7 +125,7 @@ function PaymentCard({ payment, onEdit, onDelete, onAdd, project }) {
           </div>
         )}
 
-        {/* Action icon buttons — same style as leads */}
+        {/* Action icon buttons */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <button onClick={() => onEdit(payment, project)}
             className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 dark:border-white/[0.09] bg-white dark:bg-[#1e1b16] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-all cursor-pointer">
@@ -187,14 +187,15 @@ function PaymentCard({ payment, onEdit, onDelete, onAdd, project }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function PaymentsPage() {
-  const [projects,     setProjects]     = useState([]);
-  const [payments,     setPayments]     = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [editData,     setEditData]     = useState(null);
-  const [addProject,   setAddProject]   = useState(null);
-  const [deleteId,     setDeleteId]     = useState(null);
-  const [deleting,     setDeleting]     = useState(false);
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [projects,       setProjects]       = useState([]);
+  const [payments,       setPayments]       = useState([]);
+  const [loading,        setLoading]        = useState(true);
+  const [editData,       setEditData]       = useState(null);
+  const [addProject,     setAddProject]     = useState(null);
+  const [addStandalone,  setAddStandalone]  = useState(false);   // ← NEW
+  const [deleteId,       setDeleteId]       = useState(null);
+  const [deleting,       setDeleting]       = useState(false);
+  const [filterStatus,   setFilterStatus]   = useState('all');
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -249,7 +250,7 @@ export default function PaymentsPage() {
     { key:'partial',    label:'🟡 Partial' },
     { key:'overdue',    label:'🔴 Overdue' },
     { key:'pending',    label:'⚪ Not Started' },
-    { key:'no-payment', label:'➕ No Record' },
+    { key:'no-payment', label:'➕ Add Record' },
   ];
 
   const STATS = [
@@ -260,7 +261,19 @@ export default function PaymentsPage() {
 
   return (
     <div>
-      <PageHeader title="Payments" subtitle="Project-wise payment tracking"/>
+      {/* ── Page Header with Add Payment button ── */}
+      <PageHeader
+        title="Payments"
+        subtitle="Project-wise payment tracking"
+        action={
+          <button
+            onClick={() => setAddStandalone(true)}
+            className="dark:bg-[#e8b84b] bg-indigo-500 dark:text-black text-white font-semibold inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm cursor-pointer"
+          >
+            <Plus size={15} strokeWidth={2.5}/> Add Payment
+          </button>
+        }
+      />
 
       {/* ── Summary ── */}
       <div className="grid gap-3.5 mb-6" style={{ gridTemplateColumns:'1fr 2fr' }}>
@@ -291,7 +304,7 @@ export default function PaymentsPage() {
           {STATS.map(({ label, val, sub, gradient, icon:Icon }) => (
             <div key={label}
               className="bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] rounded-2xl p-5 relative overflow-hidden shadow-card dark:shadow-card-dark">
-              <div style={{ position:'absolute', top:-12, right:-12, width:60, height:60, borderRadius:'50%', background:gradient, opacity:0.15, filter:'blur(14px)' }}/>
+              <div style={{ position:'absolute', top:-12, right:-12, width:60, height:60, borderRadius:'50%',  }}/>
               <div style={{ width:40, height:40, borderRadius:12, background:gradient, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:12 }}>
                 <Icon size={18} color="#fff" strokeWidth={2.5}/>
               </div>
@@ -303,15 +316,15 @@ export default function PaymentsPage() {
         </div>
       </div>
 
-      {/* ── Filter tabs — same pill container as leads/projects ── */}
+      {/* ── Filter tabs ── */}
       <div className="flex gap-1 bg-gray-50 dark:bg-[#161410] border border-gray-200 dark:border-white/[0.09] p-1 rounded-xl mb-5 w-fit flex-wrap">
         {FILTERS.map(({ key, label }) => (
           <button key={key} onClick={() => setFilterStatus(key)}
-            className="px-4 py-2 rounded-lg text-[13px] font-bold cursor-pointer border-none transition-all"
-            style={filterStatus === key
-              ? { background:'var(--gold,#e8b84b)', color:'#0a0a0a' }
-              : { background:'transparent', color:'#6b7280' }
-            }>
+            className={`px-4 py-2 rounded-lg text-[13px] font-bold cursor-pointer border-none transition-all
+              ${filterStatus === key
+                ? 'bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black'
+                : 'bg-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}>
             {label}
           </button>
         ))}
@@ -339,13 +352,25 @@ export default function PaymentsPage() {
         </div>
       )}
 
+      {/* ── Modals ── */}
       <Modal open={!!editData} onClose={() => setEditData(null)} title="Update Payment">
         <PaymentForm payment={editData?.payment} projectId={editData?.project?._id} onSuccess={() => { setEditData(null); fetchAll(); }} onCancel={() => setEditData(null)}/>
       </Modal>
       <Modal open={!!addProject} onClose={() => setAddProject(null)} title={`Add Payment — ${addProject?.title}`}>
         <PaymentForm projectId={addProject?._id} onSuccess={() => { setAddProject(null); fetchAll(); }} onCancel={() => setAddProject(null)}/>
       </Modal>
+
+      {/* ── Standalone Add Payment modal (header button) ── */}
+      <Modal open={addStandalone} onClose={() => setAddStandalone(false)} title="Add Payment">
+        <PaymentForm onSuccess={() => { setAddStandalone(false); fetchAll(); }} onCancel={() => setAddStandalone(false)}/>
+      </Modal>
+
       <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} loading={deleting} title="Delete Payment" message="Delete this payment record permanently?"/>
+
+      {/* ── Activity Log ── */}
+      <div className="mt-8">
+        <ActivityLog mode="page" id="payment" maxHeight="400px" />
+      </div>
     </div>
   );
 }

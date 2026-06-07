@@ -11,20 +11,20 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import NoteForm from '@/components/notes/NoteForm';
 
 export default function NotesPage() {
-  const [projects,        setProjects]        = useState([]);
+  const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
-  const [notes,           setNotes]           = useState([]);
-  const [loading,         setLoading]         = useState(false);
-  const [showCreate,      setShowCreate]      = useState(false);
-  const [editNote,        setEditNote]        = useState(null);
-  const [deleteId,        setDeleteId]        = useState(null);
-  const [deleting,        setDeleting]        = useState(false);
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editNote, setEditNote] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    projectsApi.getAll({ limit:100 }).then(r => {
+    projectsApi.getAll({ limit: 100 }).then(r => {
       setProjects(r.data.data.projects);
       if (r.data.data.projects[0]) setSelectedProject(r.data.data.projects[0]._id);
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const fetchNotes = useCallback(async () => {
@@ -56,19 +56,19 @@ export default function NotesPage() {
         action={selectedProject && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer border-none transition-all"
-            style={{ background:'var(--gold,#e8b84b)', color:'#0a0a0a', border:'1.5px solid rgba(232,184,75,0.6)' }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer border-none transition-all bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black"
           >
-            <Plus size={15} strokeWidth={2.5}/> Add Note
+            <Plus size={15} strokeWidth={2.5} /> Add Note
           </button>
+
         )}
       />
 
       {/* ── Project selector ── */}
       <div className="flex items-center gap-3 mb-5">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background:'rgba(232,184,75,0.12)', border:'1.5px solid rgba(232,184,75,0.3)' }}>
-          <FolderKanban size={16} color="var(--gold,#e8b84b)"/>
+          style={{ background: 'rgba(232,184,75,0.12)', border: '1.5px solid rgba(232,184,75,0.3)' }}>
+          <FolderKanban size={16} color="var(--gold,#e8b84b)" />
         </div>
         <select
           value={selectedProject}
@@ -87,7 +87,7 @@ export default function NotesPage() {
       {/* ── No project selected ── */}
       {!selectedProject ? (
         <div className="text-center py-16 bg-gray-50 dark:bg-[#161410] border-2 border-dashed border-gray-200 dark:border-white/[0.09] rounded-2xl">
-          <StickyNote size={28} className="text-gray-300 dark:text-gray-600 mx-auto mb-3"/>
+          <StickyNote size={28} className="text-gray-300 dark:text-gray-600 mx-auto mb-3" />
           <p className="font-display font-bold text-[15px] text-gray-700 dark:text-gray-200 mb-1">Select a project</p>
           <p className="text-[13px] text-gray-400 dark:text-gray-500">Choose a project above to view and manage its notes.</p>
         </div>
@@ -108,7 +108,7 @@ export default function NotesPage() {
               <Link
                 href={`/projects/${currentProject._id}`}
                 className="text-[13px] font-semibold no-underline flex items-center gap-1 transition-colors"
-                style={{ color:'var(--gold,#e8b84b)' }}
+                style={{ color: 'var(--gold,#e8b84b)' }}
               >
                 View Project →
               </Link>
@@ -118,37 +118,36 @@ export default function NotesPage() {
           {/* Loading */}
           {loading ? (
             <div className="p-5 flex flex-col gap-3">
-              {Array.from({length:3}).map((_,i) => (
+              {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex gap-3">
-                  <div className="skeleton w-9 h-9 rounded-xl flex-shrink-0"/>
+                  <div className="skeleton w-9 h-9 rounded-xl flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="skeleton h-3.5 w-4/5 rounded mb-2"/>
-                    <div className="skeleton h-3.5 w-3/5 rounded mb-2"/>
-                    <div className="skeleton h-2.5 w-1/4 rounded"/>
+                    <div className="skeleton h-3.5 w-4/5 rounded mb-2" />
+                    <div className="skeleton h-3.5 w-3/5 rounded mb-2" />
+                    <div className="skeleton h-2.5 w-1/4 rounded" />
                   </div>
                 </div>
               ))}
             </div>
 
-          /* Empty */
+            /* Empty */
           ) : notes.length === 0 ? (
             <div className="text-center py-14">
               <div className="w-13 h-13 rounded-2xl bg-gray-100 dark:bg-[#1e1b16] border border-gray-200 dark:border-white/[0.09] flex items-center justify-center mx-auto mb-3"
-                style={{ width:52, height:52 }}>
-                <StickyNote size={22} className="text-gray-300 dark:text-gray-600"/>
+                style={{ width: 52, height: 52 }}>
+                <StickyNote size={22} className="text-gray-300 dark:text-gray-600" />
               </div>
               <p className="font-display font-bold text-[15px] text-gray-700 dark:text-gray-200 mb-1">No notes yet</p>
               <p className="text-[13px] text-gray-400 dark:text-gray-500 mb-5">Add the first note to this project.</p>
               <button
                 onClick={() => setShowCreate(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer border-none transition-all"
-                style={{ background:'var(--gold,#e8b84b)', color:'#0a0a0a' }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer border-none transition-all bg-indigo-500 dark:bg-[#e8b84b] text-white dark:text-black"
               >
-                <Plus size={14}/> Add Note
+                <Plus size={14} /> Add Note
               </button>
             </div>
 
-          /* Notes list */
+            /* Notes list */
           ) : (
             <div className="divide-y divide-gray-100 dark:divide-white/[0.06]">
               {notes.map(note => (
@@ -158,15 +157,15 @@ export default function NotesPage() {
                 >
                   {/* Icon */}
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background:'rgba(232,184,75,0.1)', border:'1.5px solid rgba(232,184,75,0.25)' }}>
-                    <StickyNote size={15} color="var(--gold,#e8b84b)"/>
+                    style={{ background: 'rgba(232,184,75,0.1)', border: '1.5px solid rgba(232,184,75,0.25)' }}>
+                    <StickyNote size={15} color="var(--gold,#e8b84b)" />
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] text-gray-700 dark:text-gray-200 leading-relaxed m-0">{note.content}</p>
                     <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-1.5">
-                      {new Date(note.createdAt).toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' })}
+                      {new Date(note.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                     </p>
                   </div>
 
@@ -176,13 +175,13 @@ export default function NotesPage() {
                       onClick={() => setEditNote(note)}
                       className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 dark:border-white/[0.09] bg-white dark:bg-[#161410] text-gray-400 hover:text-yellow-500 hover:border-yellow-400 dark:hover:border-yellow-500 transition-all cursor-pointer"
                     >
-                      <Pencil size={13}/>
+                      <Pencil size={13} />
                     </button>
                     <button
                       onClick={() => setDeleteId(note._id)}
                       className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 dark:border-white/[0.09] bg-white dark:bg-[#161410] text-red-400 hover:text-red-600 hover:border-red-300 dark:hover:border-red-800/50 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer"
                     >
-                      <Trash2 size={13}/>
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
@@ -193,12 +192,12 @@ export default function NotesPage() {
       )}
 
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Add Note">
-        <NoteForm projectId={selectedProject} onSuccess={() => { setShowCreate(false); fetchNotes(); }} onCancel={() => setShowCreate(false)}/>
+        <NoteForm projectId={selectedProject} onSuccess={() => { setShowCreate(false); fetchNotes(); }} onCancel={() => setShowCreate(false)} />
       </Modal>
       <Modal open={!!editNote} onClose={() => setEditNote(null)} title="Edit Note">
-        <NoteForm note={editNote} projectId={selectedProject} onSuccess={() => { setEditNote(null); fetchNotes(); }} onCancel={() => setEditNote(null)}/>
+        <NoteForm note={editNote} projectId={selectedProject} onSuccess={() => { setEditNote(null); fetchNotes(); }} onCancel={() => setEditNote(null)} />
       </Modal>
-      <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} loading={deleting} title="Delete Note" message="Delete this note permanently?"/>
+      <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} loading={deleting} title="Delete Note" message="Delete this note permanently?" />
     </div>
   );
 }
