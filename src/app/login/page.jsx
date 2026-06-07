@@ -95,7 +95,7 @@ export default function LoginPage() {
           font-weight: 600;
           border: none;
           cursor: pointer;
-          font-family: 'Fraunces', serif;
+          font-family: 'Poppins', 'system-ui', 'sans-serif';
           letter-spacing: 0.01em;
           display: flex;
           align-items: center;
@@ -142,11 +142,11 @@ export default function LoginPage() {
 
         .label {
           display: block;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 600;
           letter-spacing: 0.07em;
           text-transform: uppercase;
-          color: #9a8878;
+          color: #6e5e50;
           margin-bottom: 7px;
           font-family: 'DM Sans', sans-serif;
         }
@@ -166,29 +166,30 @@ export default function LoginPage() {
         <div style={{ width: '100%', maxWidth: 420, padding: '24px 20px', position: 'relative', zIndex: 1 }}>
 
           {/* Logo */}
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div
-              className="logo-ring"
-              style={{
-                width: 52, height: 52, borderRadius: 16,
-                background: '#6366f1',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 14px',
-              }}
-            >
-              <Zap size={24} color="#ffffff" strokeWidth={2.5} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+              <div
+                className="logo-ring"
+                style={{
+                  width: 52, height: 52, borderRadius: 16,
+                  background: '#6366f1',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Zap size={24} color="#ffffff" strokeWidth={2.5} />
+              </div>
+              <h1 className='font-poppins' style={{
+                fontWeight: 600, fontSize: 35,
+                color: '#1a1208d2',
+                letterSpacing: '0.05em',
+                margin: 0, lineHeight: 1,
+              }}>
+                MiniCRM
+              </h1>
             </div>
-            <h1 style={{
-              fontFamily: "'Fraunces', serif",
-              fontWeight: 700, fontSize: 30,
-              color: '#1a1208',
-              letterSpacing: '-0.03em',
-              margin: 0, lineHeight: 1,
-            }}>
-              MiniCRM
-            </h1>
-            <p style={{ fontSize: 14, color: '#9a8878', marginTop: 7, fontFamily: "'DM Sans', sans-serif" }}>
-              Sign in to your agency dashboard
+            <p style={{ fontSize: 14, color: '#9a8878', margin: 0, fontFamily: "'DM Sans', sans-serif" }}>
+              Create your agency dashboard
             </p>
           </div>
 
@@ -198,7 +199,7 @@ export default function LoginPage() {
 
               {/* Email */}
               <div>
-                <label className="label">Email Address</label>
+                <label className="label font-poppins">Email Address</label>
                 <div style={{ position: 'relative' }}>
                   <Mail
                     size={16}
@@ -211,7 +212,7 @@ export default function LoginPage() {
                   />
                   <input
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder="Enter Your Email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     onFocus={() => setFocused('email')}
@@ -274,7 +275,7 @@ export default function LoginPage() {
             <div className="divider">or</div>
 
             <p style={{ textAlign: 'center', fontSize: 13, color: '#9a8878', fontFamily: "'DM Sans', sans-serif", margin: 0 }}>
-              Don&apos;t have an account?{' '}
+              Don&apos;t have an account?{' '} <br />
               <Link href="/register" style={{ color: ' #6366f1', fontWeight: 600, textDecoration: 'none' }}>
                 Create your admin account
               </Link>

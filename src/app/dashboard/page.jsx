@@ -88,7 +88,7 @@ function BreakdownRow({ label, value, total, color, icon: Icon }) {
           <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400">{label}</span>
           <span className="text-[12px] font-semibold text-gray-800 dark:text-gray-200">{value ?? 0}</span>
         </div>
-        <div className="h-1 bg-gray-100 dark:bg-white/[0.06] rounded-full overflow-hidden">
+        <div className="h-1 bg-gray-200 dark:bg-white/[0.06] rounded-full overflow-hidden">
           <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
         </div>
       </div>
@@ -101,6 +101,7 @@ function BreakdownRow({ label, value, total, color, icon: Icon }) {
 function SectionCard({ title, href, linkLabel = 'View all', children, icon: Icon }) {
   return (
     <div className="bg-gray-100 dark:bg-[#1c1917] border border-gray-200/80 dark:border-white/[0.07] rounded-xl overflow-hidden">
+      {/* Header — bg-gray-100 */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-200/80 dark:border-white/[0.05]">
         <div className="flex items-center gap-2">
           {Icon && <Icon size={14} className="text-gray-400 dark:text-gray-500" />}
@@ -112,7 +113,10 @@ function SectionCard({ title, href, linkLabel = 'View all', children, icon: Icon
           </Link>
         )}
       </div>
-      {children}
+      {/* Body — bg-gray-50 */}
+      <div className="bg-gray-50 dark:bg-[#141413]">
+        {children}
+      </div>
     </div>
   );
 }
@@ -238,7 +242,7 @@ export default function DashboardPage() {
               {/* Donut */}
               <div className="relative w-14 h-14 flex-shrink-0">
                 <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
-                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="4" className="text-gray-100 dark:text-white/[0.06]" />
+                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="#0c00002a" strokeWidth="4" className="text-gray-200 dark:text-white/[0.06]" />
                   <circle cx="18" cy="18" r="15.9" fill="none" stroke="#10b981" strokeWidth="4"
                     strokeDasharray={`${paidPct} 100`} strokeLinecap="round" />
                 </svg>
@@ -262,7 +266,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             </div>
-            <div className="pt-3 border-t border-gray-100 dark:border-white/[0.05] flex items-center gap-2">
+            <div className="pt-3 border-t border-gray-200 dark:border-white/[0.05] flex items-center gap-2">
               <RefreshCw size={11} className="text-amber-500" />
               <span className="text-[11px] text-gray-400 dark:text-gray-500">MRR</span>
               <span className="text-[12px] font-semibold" style={{ color: 'var(--gold)' }}>{fmt(d.recurring?.monthlyRevenue)}</span>
@@ -280,10 +284,10 @@ export default function DashboardPage() {
             <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-5 py-3">
-                  <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-white/[0.06] animate-pulse flex-shrink-0" />
+                  <div className="w-7 h-7 rounded-lg bg-gray-200 dark:bg-white/[0.06] animate-pulse flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="h-3 w-2/3 rounded bg-gray-100 dark:bg-white/[0.06] animate-pulse mb-1.5" />
-                    <div className="h-2.5 w-1/3 rounded bg-gray-100 dark:bg-white/[0.06] animate-pulse" />
+                    <div className="h-3 w-2/3 rounded bg-gray-200 dark:bg-white/[0.06] animate-pulse mb-1.5" />
+                    <div className="h-2.5 w-1/3 rounded bg-gray-200 dark:bg-white/[0.06] animate-pulse" />
                   </div>
                 </div>
               ))}
@@ -297,7 +301,7 @@ export default function DashboardPage() {
           ) : (
             <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
               {meetings.map(m => (
-                <div key={m._id} className="flex items-start gap-3 px-5 py-3 hover:bg-gray-200/50 dark:hover:bg-white/[0.02] transition-colors">
+                <div key={m._id} className="flex items-start gap-3 px-5 py-3 hover:bg-gray-100/80 dark:hover:bg-white/[0.02] transition-colors">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-gray-200 dark:bg-white/[0.06]">
                     <MeetingTypeIcon type={m.type} />
                   </div>
@@ -335,10 +339,10 @@ export default function DashboardPage() {
             <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-5 py-3">
-                  <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-white/[0.06] animate-pulse flex-shrink-0" />
+                  <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-white/[0.06] animate-pulse flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="h-3 w-2/5 rounded bg-gray-100 dark:bg-white/[0.06] animate-pulse mb-1.5" />
-                    <div className="h-2.5 w-1/4 rounded bg-gray-100 dark:bg-white/[0.06] animate-pulse" />
+                    <div className="h-3 w-2/5 rounded bg-gray-200 dark:bg-white/[0.06] animate-pulse mb-1.5" />
+                    <div className="h-2.5 w-1/4 rounded bg-gray-200 dark:bg-white/[0.06] animate-pulse" />
                   </div>
                 </div>
               ))}
@@ -347,9 +351,8 @@ export default function DashboardPage() {
             <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
               {d.recentClients.map((c, i) => (
                 <Link key={i} href={`/clients/${c._id}`}
-                  className="flex items-center gap-3 px-5 py-3 no-underline hover:bg-gray-200/50 dark:hover:bg-white/[0.02] transition-colors">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-[12px] text-white"
-                    style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}>
+                  className="flex items-center gap-3 px-5 py-3 no-underline hover:bg-gray-100/80 dark:hover:bg-white/[0.02] transition-colors">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-[12px] text-white bg-indigo-500">
                     {c.name[0]?.toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -371,10 +374,10 @@ export default function DashboardPage() {
             <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-5 py-3">
-                  <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-white/[0.06] animate-pulse flex-shrink-0" />
+                  <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-white/[0.06] animate-pulse flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="h-3 w-2/5 rounded bg-gray-100 dark:bg-white/[0.06] animate-pulse mb-1.5" />
-                    <div className="h-2.5 w-1/4 rounded bg-gray-100 dark:bg-white/[0.06] animate-pulse" />
+                    <div className="h-3 w-2/5 rounded bg-gray-200 dark:bg-white/[0.06] animate-pulse mb-1.5" />
+                    <div className="h-2.5 w-1/4 rounded bg-gray-200 dark:bg-white/[0.06] animate-pulse" />
                   </div>
                 </div>
               ))}
@@ -383,7 +386,7 @@ export default function DashboardPage() {
             <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
               {d.recentProjects.map((p, i) => (
                 <Link key={i} href={`/projects/${p._id}`}
-                  className="flex items-center gap-3 px-5 py-3 no-underline hover:bg-gray-200/50 dark:hover:bg-white/[0.02] transition-colors">
+                  className="flex items-center gap-3 px-5 py-3 no-underline hover:bg-gray-100/80 dark:hover:bg-white/[0.02] transition-colors">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-[12px] text-white"
                     style={{ background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' }}>
                     {p.title[0]?.toUpperCase()}

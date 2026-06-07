@@ -6,13 +6,13 @@ import { Zap, User, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
-  const [name,     setName]     = useState('');
-  const [email,    setEmail]    = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm,  setConfirm]  = useState('');
+  const [confirm, setConfirm] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [focused,  setFocused]  = useState('');
+  const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState('');
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -98,7 +98,7 @@ export default function RegisterPage() {
           font-weight: 600;
           border: none;
           cursor: pointer;
-          font-family: 'Fraunces', serif;
+          font-family: 'Poppins', 'system-ui', 'sans-serif';
           letter-spacing: 0.01em;
           display: flex;
           align-items: center;
@@ -145,11 +145,11 @@ export default function RegisterPage() {
 
         .label {
           display: block;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 600;
           letter-spacing: 0.07em;
           text-transform: uppercase;
-          color: #9a8878;
+          color: #6e5e50;
           margin-bottom: 7px;
           font-family: 'DM Sans', sans-serif;
         }
@@ -177,51 +177,43 @@ export default function RegisterPage() {
       `}</style>
 
       <div className="register-root">
-        <div style={{ width: '100%', maxWidth: 420, padding: '24px 20px', position: 'relative', zIndex: 1 }}>
+        <div style={{ width: '100%', maxWidth: 420, padding: '24px 20px', position: 'relative', zIndex: 1, marginTop: 10 }}>
 
           {/* Logo */}
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div
-              className="logo-ring"
-              style={{
-                width: 52, height: 52, borderRadius: 16,
-                background: '#6366f1',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 14px',
-              }}
-            >
-              <Zap size={24} color="#ffffff" strokeWidth={2.5} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+              <div
+                className="logo-ring"
+                style={{
+                  width: 52, height: 52, borderRadius: 16,
+                  background: '#6366f1',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Zap size={24} color="#ffffff" strokeWidth={2.5} />
+              </div>
+              <h1 className='font-poppins' style={{
+                fontWeight: 600, fontSize: 35,
+                color: '#1a1208d2',
+                letterSpacing: '0.05em',
+                margin: 0, lineHeight: 1,
+              }}>
+                MiniCRM
+              </h1>
             </div>
-            <h1 style={{
-              fontFamily: "'Fraunces', serif",
-              fontWeight: 700, fontSize: 30,
-              color: '#1a1208',
-              letterSpacing: '-0.03em',
-              margin: 0, lineHeight: 1,
-            }}>
-              MiniCRM
-            </h1>
-            <p style={{ fontSize: 14, color: '#9a8878', marginTop: 7, fontFamily: "'DM Sans', sans-serif" }}>
+            <p style={{ fontSize: 14, color: '#9a8878', margin: 0, fontFamily: "'DM Sans', sans-serif" }}>
               Create your agency dashboard
             </p>
           </div>
 
           {/* Card */}
           <div className="card">
-
-            {/* Info banner */}
-            <div className="info-banner">
-              <span style={{ fontSize: 15 }}>💡</span>
-              <p style={{ fontSize: 12, color: '#a07830', margin: 0, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5 }}>
-                Each account has its own private workspace. Your clients, projects and data are completely isolated.
-              </p>
-            </div>
-
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
               {/* Name */}
               <div>
-                <label className="label">Full Name</label>
+                <label className="label ">Full Name</label>
                 <div style={{ position: 'relative' }}>
                   <User
                     size={16}
@@ -233,7 +225,7 @@ export default function RegisterPage() {
                     }}
                   />
                   <input
-                    placeholder="John Doe"
+                    placeholder="Enter Your Full Name"
                     value={name}
                     onChange={e => setName(e.target.value)}
                     onFocus={() => setFocused('name')}
@@ -258,7 +250,7 @@ export default function RegisterPage() {
                   />
                   <input
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder="Enter Your Email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     onFocus={() => setFocused('email')}
@@ -354,7 +346,7 @@ export default function RegisterPage() {
 
             <p style={{ textAlign: 'center', fontSize: 13, color: '#9a8878', fontFamily: "'DM Sans', sans-serif", margin: 0 }}>
               Already have an account?{' '}
-              <Link href="/login" style={{ color: '#6366f1', fontWeight: 600, textDecoration: 'none' }}>
+              <Link href="/login" style={{ color: '#6366f1', fontWeight: 600, textDecoration: 'none',fontSize: 14, }}>
                 Sign in
               </Link>
             </p>
