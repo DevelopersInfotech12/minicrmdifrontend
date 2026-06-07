@@ -1,16 +1,16 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-const ThemeContext = createContext({ theme: 'dark', toggle: () => {} });
+const ThemeContext = createContext({ theme: 'light', toggle: () => { } });
 export const useTheme = () => useContext(ThemeContext);
 
 export default function ThemeProvider({ children }) {
   // Read from localStorage synchronously on mount
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('crm-theme') || 'dark';
+      return localStorage.getItem('crm-theme') || 'light';
     }
-    return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
