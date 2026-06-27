@@ -21,7 +21,6 @@ const CYCLE_CFG = {
 
 const multiplier = { Monthly: 1, Quarterly: 1 / 3, 'Half-yearly': 1 / 6, Yearly: 1 / 12 };
 
-// ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon: Icon, gradient, sub, loading }) {
   return (
     <div className="relative rounded-xl overflow-hidden bg-white dark:bg-[#1c1917] border border-gray-200/80 dark:border-white/[0.07] p-5 hover:border-gray-300 dark:hover:border-white/[0.14] transition-all duration-200">
@@ -46,7 +45,6 @@ function StatCard({ label, value, icon: Icon, gradient, sub, loading }) {
   );
 }
 
-// ── Recurring Row ─────────────────────────────────────────────────────────────
 function RecurringRow({ project, onEdit, isOverdue }) {
   const daysUntil = project.nextBillingDate
     ? Math.ceil((new Date(project.nextBillingDate) - new Date()) / (1000 * 60 * 60 * 24))
@@ -55,7 +53,6 @@ function RecurringRow({ project, onEdit, isOverdue }) {
 
   return (
     <tr className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
-      {/* Project */}
       <td className="px-5 py-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-display font-bold text-sm text-white"
@@ -77,7 +74,6 @@ function RecurringRow({ project, onEdit, isOverdue }) {
         </div>
       </td>
 
-      {/* Cycle */}
       <td className="px-5 py-4">
         <span className="font-display font-semibold text-[11px] px-2.5 py-1 rounded-full"
           style={{ background: cycleCfg.bg, border: `1.5px solid ${cycleCfg.border}`, color: cycleCfg.color }}>
@@ -85,13 +81,11 @@ function RecurringRow({ project, onEdit, isOverdue }) {
         </span>
       </td>
 
-      {/* Amount */}
       <td className="px-5 py-4">
         <p className="font-display font-bold text-[15px] text-gray-900 dark:text-white">{fmt(project.recurringAmount)}</p>
         <p className="font-display text-[11px] text-gray-400 dark:text-gray-500">per {project.billingCycle?.toLowerCase()}</p>
       </td>
 
-      {/* Next Billing */}
       <td className="px-5 py-4">
         <div className="flex items-center gap-2">
           {isOverdue
@@ -104,14 +98,23 @@ function RecurringRow({ project, onEdit, isOverdue }) {
             </p>
             {daysUntil !== null && (
               <p className={`font-display text-[11px] ${isOverdue ? 'text-red-400' : 'text-gray-400'}`}>
-                {isOverdue ? `${Math.abs(daysUntil)}d overdue` : `${daysUntil}d left`}
+                {isOverdue ? `${Math.abs(daysUntil)}d overdue` : `in ${daysUntil}d`}
               </p>
             )}
           </div>
         </div>
       </td>
 
-      {/* Service */}
+      <td className="px-5 py-4">
+        <span className={`font-display font-semibold text-[11px] px-2.5 py-1 rounded-full ${
+          project.recurringActive
+            ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/25'
+            : 'text-gray-400 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08]'
+        }`}>
+          {project.recurringActive ? 'Active' : 'Completed'}
+        </span>
+      </td>
+
       <td className="px-5 py-4">
         {project.serviceType ? (
           <span className="font-display font-semibold text-[11px] px-2.5 py-1 rounded-full"
@@ -121,7 +124,6 @@ function RecurringRow({ project, onEdit, isOverdue }) {
         ) : <span className="text-gray-300 dark:text-gray-600">—</span>}
       </td>
 
-      {/* Actions */}
       <td className="px-5 py-4">
         <div className="flex items-center gap-1.5">
           <button onClick={() => onEdit(project)}
@@ -142,23 +144,26 @@ function RecurringRow({ project, onEdit, isOverdue }) {
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
 export default function RecurringPage() {
-  const [data,        setData]        = useState(null);
+  const [dueData,     setDueData]     = useState(null);
+  const [allProjects, setAllProjects] = useState([]);
   const [clients,     setClients]     = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [editProject, setEditProject] = useState(null);
-  const [activeTab,   setActiveTab]   = useState('all');
+  const [recurringStatus, setRecurringStatus] = useState('active');
   const [search,      setSearch]      = useState('');
+  const [activeTab,   setActiveTab]   = useState('all');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [dueRes, clientRes] = await Promise.all([
+      const [dueRes, allRes, clientRes] = await Promise.all([
         projectsApi.getRecurringDue(),
+        projectsApi.getAll({ isRecurring: true, limit: 200 }),
         projectsApi.getClientRecurring(),
       ]);
-      setData(dueRes.data.data);
+      setDueData(dueRes.data.data);
+      setAllProjects(allRes.data.data?.projects || allRes.data.data || []);
       setClients(clientRes.data.data.summary);
     } catch { toast.error('Failed to load recurring data'); }
     finally { setLoading(false); }
@@ -166,47 +171,64 @@ export default function RecurringPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const allRecurring    = data ? [...(data.overdue || []), ...(data.upcoming || [])] : [];
-  const overdueProjects = data?.overdue  || [];
-  const upcomingProjects= data?.upcoming || [];
-  const totalMonthly    = data?.byBillingCycle?.reduce((s, g) => s + g.total * (multiplier[g._id] || 1), 0) || 0;
+  const overdueProjects  = dueData?.overdue  || [];
+  const upcomingProjects = dueData?.upcoming || [];
+  const totalMonthly     = dueData?.byBillingCycle?.reduce((s, g) => s + g.total * (multiplier[g._id] || 1), 0) || 0;
 
-  const tabs = [
-    { key: 'all',     label: 'All Renewals' },
-    { key: 'overdue', label: `🔴 Overdue (${overdueProjects.length})` },
-    { key: 'upcoming',label: `🟡 This Week (${upcomingProjects.length})` },
-    { key: 'clients', label: 'By Client' },
+  const activeProjects    = allProjects.filter(p => p.recurringActive !== false);
+  const completedProjects = allProjects.filter(p => p.recurringActive === false);
+
+  const statusTabs = [
+    { key: 'active',    label: '🟢 Active',   count: activeProjects.length    },
+    { key: 'completed', label: '✅ Completed', count: completedProjects.length },
+    { key: 'all',       label: 'All',          count: allProjects.length       },
   ];
 
-  const baseProjects = activeTab === 'overdue' ? overdueProjects : activeTab === 'upcoming' ? upcomingProjects : allRecurring;
+  const renewalTabs = [
+    { key: 'all',      label: 'All Renewals' },
+    { key: 'overdue',  label: `🔴 Overdue (${overdueProjects.length})`    },
+    { key: 'upcoming', label: `🟡 This Week (${upcomingProjects.length})` },
+    { key: 'clients',  label: 'By Client'                                 },
+  ];
+
+  const statusPool =
+    recurringStatus === 'active'    ? activeProjects :
+    recurringStatus === 'completed' ? completedProjects : allProjects;
+
+  const overdueIds  = new Set(overdueProjects.map(p => p._id));
+  const upcomingIds = new Set(upcomingProjects.map(p => p._id));
+
+  const baseProjects =
+    activeTab === 'overdue'  ? statusPool.filter(p => overdueIds.has(p._id))  :
+    activeTab === 'upcoming' ? statusPool.filter(p => upcomingIds.has(p._id)) : statusPool;
 
   const displayProjects = baseProjects.filter(p => {
     if (!search) return true;
     const q = search.toLowerCase();
-    return p.title?.toLowerCase().includes(q) || p.client?.name?.toLowerCase().includes(q) || p.serviceType?.toLowerCase().includes(q);
+    return p.title?.toLowerCase().includes(q) ||
+           p.client?.name?.toLowerCase().includes(q) ||
+           p.serviceType?.toLowerCase().includes(q);
   });
 
   return (
     <div>
       <PageHeader title="Recurring Payments" subtitle="Manage retainer clients and renewal schedules" />
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-4 gap-3 mb-5">
         <StatCard label="Monthly Recurring Revenue" value={fmt(Math.round(totalMonthly))} icon={RefreshCw}   gradient="linear-gradient(135deg,#f59e0b,#d97706)" loading={loading} />
-        <StatCard label="Active Retainers"          value={allRecurring.length}           icon={TrendingUp}  gradient="linear-gradient(135deg,#10b981,#059669)" loading={loading} />
+        <StatCard label="Active Retainers"          value={activeProjects.length}         icon={TrendingUp}  gradient="linear-gradient(135deg,#10b981,#059669)" loading={loading} />
         <StatCard label="Overdue Renewals"          value={overdueProjects.length}        icon={AlertCircle} gradient={overdueProjects.length > 0 ? 'linear-gradient(135deg,#f43f5e,#e11d48)' : 'linear-gradient(135deg,#6b7280,#374151)'} sub={overdueProjects.length > 0 ? 'Action required' : undefined} loading={loading} />
         <StatCard label="Due This Week"             value={upcomingProjects.length}       icon={Clock}       gradient="linear-gradient(135deg,#8b5cf6,#6d28d9)" loading={loading} />
       </div>
 
-      {/* Billing Cycle Breakdown */}
-      {!loading && data?.byBillingCycle?.length > 0 && (
+      {!loading && dueData?.byBillingCycle?.length > 0 && (
         <div className="bg-white dark:bg-[#1c1917] border border-gray-200/80 dark:border-white/[0.07] rounded-xl overflow-hidden mb-5">
           <div className="flex items-center px-5 py-3.5 border-b border-gray-100 dark:border-white/[0.05]">
             <p className="font-display font-semibold text-[13px] text-gray-800 dark:text-gray-100">Revenue by Billing Cycle</p>
           </div>
           <div className="p-5 grid grid-cols-4 gap-3">
             {['Monthly', 'Quarterly', 'Half-yearly', 'Yearly'].map(cycle => {
-              const found = data.byBillingCycle.find(b => b._id === cycle);
+              const found = dueData.byBillingCycle.find(b => b._id === cycle);
               if (!found) return null;
               const cfg = CYCLE_CFG[cycle];
               return (
@@ -222,10 +244,22 @@ export default function RecurringPage() {
         </div>
       )}
 
-      {/* Filters */}
+      <div className="flex gap-2 mb-3">
+        {statusTabs.map(t => (
+          <button key={t.key} onClick={() => setRecurringStatus(t.key)}
+            className="px-4 py-2 rounded-lg font-display font-semibold text-[13px] cursor-pointer border transition-all"
+            style={recurringStatus === t.key
+              ? { background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', border: '1px solid transparent' }
+              : { background: 'transparent', color: '#6b7280', border: '1px solid rgba(107,114,128,0.2)' }
+            }>
+            {t.label} <span className="ml-1 opacity-70">({t.count})</span>
+          </button>
+        ))}
+      </div>
+
       <div className="flex gap-3 mb-5">
         <div className="flex gap-1 bg-gray-50 dark:bg-white/[0.03] border border-gray-200/80 dark:border-white/[0.07] p-1 rounded-xl flex-shrink-0">
-          {tabs.map(t => (
+          {renewalTabs.map(t => (
             <button key={t.key} onClick={() => setActiveTab(t.key)}
               className="px-4 py-2 rounded-lg font-display font-semibold text-[13px] cursor-pointer border-none transition-all"
               style={activeTab === t.key
@@ -253,7 +287,6 @@ export default function RecurringPage() {
         )}
       </div>
 
-      {/* Table — projects */}
       {activeTab !== 'clients' && (
         <div className="bg-white dark:bg-[#1c1917] border border-gray-200/80 dark:border-white/[0.07] rounded-xl overflow-hidden">
           {loading ? (
@@ -266,15 +299,15 @@ export default function RecurringPage() {
             <div className="text-center py-16">
               <RefreshCw size={22} className="text-gray-300 dark:text-gray-600 mx-auto mb-2.5" />
               <p className="font-display font-semibold text-[13px] text-gray-400 dark:text-gray-500">
-                No {activeTab === 'overdue' ? 'overdue' : activeTab === 'upcoming' ? 'upcoming' : ''} recurring projects
+                No recurring projects found
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse" style={{ minWidth: 780 }}>
+              <table className="w-full border-collapse" style={{ minWidth: 820 }}>
                 <thead>
                   <tr className="bg-gray-100/50 dark:bg-[#161410] border-b border-gray-100 dark:border-white/[0.05]">
-                    {['Project', 'Cycle', 'Amount', 'Next Billing', 'Service', 'Actions'].map(h => (
+                    {['Project', 'Cycle', 'Amount', 'Next Billing', 'Status', 'Service', 'Actions'].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{h}</th>
                     ))}
                   </tr>
@@ -285,7 +318,7 @@ export default function RecurringPage() {
                       key={p._id}
                       project={p}
                       onEdit={setEditProject}
-                      isOverdue={overdueProjects.some(o => o._id === p._id)}
+                      isOverdue={overdueIds.has(p._id)}
                     />
                   ))}
                 </tbody>
@@ -295,7 +328,6 @@ export default function RecurringPage() {
         </div>
       )}
 
-      {/* Client Summary Tab */}
       {activeTab === 'clients' && (
         <div className="bg-white dark:bg-[#1c1917] border border-gray-200/80 dark:border-white/[0.07] rounded-xl overflow-hidden">
           {loading ? (
@@ -353,7 +385,6 @@ export default function RecurringPage() {
         <ProjectForm project={editProject} onSuccess={() => { setEditProject(null); fetchData(); }} onCancel={() => setEditProject(null)} />
       </Modal>
 
-      {/* ── Activity Log ── */}
       <div className="mt-8">
         <ActivityLog mode="page" id="recurring" maxHeight="400px" />
       </div>

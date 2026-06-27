@@ -106,6 +106,11 @@ export default function ProjectDetailPage() {
     return `${fmtDate(d)}, ${h}:${m}`;
   };
 
+  // Normalize assignedTo to always be an array
+  const assignedToList = project.assignedTo
+    ? (Array.isArray(project.assignedTo) ? project.assignedTo : [project.assignedTo]).filter(Boolean)
+    : [];
+
   return (
     <div className="animate-fade-in">
 
@@ -289,26 +294,37 @@ export default function ProjectDetailPage() {
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{project.description}</p>
             )}
 
-            {/* Assigned To */}
-            {project.assignedTo && (
-              <div className="flex items-center gap-2.5 p-3 rounded-xl"
-                style={{ background: 'rgba(232,184,75,0.08)', border: '1px solid rgba(232,184,75,0.2)' }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xs text-[#0a0a0a]"
-                  style={{ background: 'linear-gradient(135deg,#e8b84b,#b88c2a)' }}>
-                  {project.assignedTo.name?.[0]?.toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold text-gray-800 dark:text-white leading-none truncate">
-                    {project.assignedTo.name}
-                  </p>
-                  {project.assignedTo.role && (
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{project.assignedTo.role}</p>
-                  )}
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                  style={{ background: 'rgba(232,184,75,0.15)', color: '#b8860b' }}>
-                  Assigned
-                </span>
+            {/* ── Assigned To (array-safe) ── */}
+            {assignedToList.length > 0 && (
+              <div className="flex flex-col gap-2">
+                {assignedToList.map((person, i) => (
+                  <div
+                    key={person._id || i}
+                    className="flex items-center gap-2.5 p-3 rounded-xl"
+                    style={{ background: 'rgba(232,184,75,0.08)', border: '1px solid rgba(232,184,75,0.2)' }}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xs text-[#0a0a0a]"
+                      style={{ background: 'linear-gradient(135deg,#e8b84b,#b88c2a)' }}
+                    >
+                      {person.name?.[0]?.toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-bold text-gray-800 dark:text-white leading-none truncate">
+                        {person.name}
+                      </p>
+                      {person.role && (
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{person.role}</p>
+                      )}
+                    </div>
+                    <span
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+                      style={{ background: 'rgba(232,184,75,0.15)', color: '#b8860b' }}
+                    >
+                      Assigned
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
 

@@ -175,4 +175,12 @@ export const activityApi = {
   getAll:       (params = {})            => api.get('/activity/all',                   { params }),
 };
 
+export const personalProjectsApi = {
+  getAll:  (params = {}) => api.get('/personal-projects', { params }),
+  getById: (id)          => api.get(`/personal-projects/${id}`),
+  create:  (data)        => api.post('/personal-projects', data),
+  update:  (id, data)    => api.put(`/personal-projects/${id}`, data),
+  delete:  (id)          => api.delete(`/personal-projects/${id}`),
+};
+
 export default api;

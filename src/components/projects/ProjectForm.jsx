@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { projectsApi, clientsApi, employeesApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { RefreshCw, FolderKanban, UserCheck, ChevronDown, Check } from 'lucide-react';
+import { RefreshCw, FolderKanban, UserCheck, ChevronDown, Check, X } from 'lucide-react';
 
 const SERVICE_TYPES  = ["Website Development","App Development","SEO","Social Media Marketing","Google Ads","Meta Ads","Branding / Design","Content Writing","Other"];
 const PRIORITY_TYPES = ["Urgent","Long-term","One-time","Retainer"];
@@ -30,7 +30,6 @@ function Field({ label, children, error }) {
   );
 }
 
-// ── Custom Dropdown ──────────────────────────────────────────────────────────
 function CustomSelect({ value, onChange, options, placeholder = 'Select…', icon: Icon }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -46,7 +45,6 @@ function CustomSelect({ value, onChange, options, placeholder = 'Select…', ico
 
   return (
     <div ref={ref} className="relative">
-      {/* Trigger */}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -62,7 +60,6 @@ function CustomSelect({ value, onChange, options, placeholder = 'Select…', ico
         />
       </button>
 
-      {/* Dropdown list */}
       {open && (
         <div
           className="absolute z-50 mt-1.5 w-full rounded-xl overflow-hidden shadow-lg"
@@ -101,7 +98,6 @@ function CustomSelect({ value, onChange, options, placeholder = 'Select…', ico
   );
 }
 
-// ── Main Form ────────────────────────────────────────────────────────────────
 export default function ProjectForm({ project, defaultClientId, onSuccess, onCancel }) {
   const [title,           setTitle]           = useState(project?.title || '');
   const [description,     setDescription]     = useState(project?.description || '');
@@ -116,7 +112,11 @@ export default function ProjectForm({ project, defaultClientId, onSuccess, onCan
   const [recurringAmount, setRecurringAmount] = useState(project?.recurringAmount || '');
   const [nextBillingDate, setNextBillingDate] = useState(project?.nextBillingDate ? project.nextBillingDate.substring(0,10) : '');
   const [budget,          setBudget]          = useState(project?.budget ?? '');
-  const [assignedTo,      setAssignedTo]      = useState(project?.assignedTo?._id || project?.assignedTo || '');
+  const [assignedTo,      setAssignedTo]      = useState(
+    project?.assignedTo
+      ? (Array.isArray(project.assignedTo) ? project.assignedTo.map(a => a?._id || a) : [project.assignedTo?._id || project.assignedTo])
+      : ['']
+  );
   const [clients,         setClients]         = useState([]);
   const [employees,       setEmployees]       = useState([]);
   const [loading,         setLoading]         = useState(false);
@@ -149,7 +149,7 @@ export default function ProjectForm({ project, defaultClientId, onSuccess, onCan
         startDate:   startDate   || undefined,
         endDate:     endDate     || undefined,
         budget:      budget !== '' ? Number(budget) : null,
-        assignedTo:  assignedTo  || null,
+        assignedTo:  assignedTo.filter(a => a) || [],
         isRecurring,
         billingCycle:    isRecurring ? billingCycle            : undefined,
         recurringAmount: isRecurring ? Number(recurringAmount) : undefined,
@@ -268,13 +268,33 @@ export default function ProjectForm({ project, defaultClientId, onSuccess, onCan
         {/* Assigned To + Budget */}
         <div className="grid grid-cols-2 gap-3.5">
           <Field label="Assigned to">
-            <CustomSelect
-              value={assignedTo}
-              onChange={setAssignedTo}
-              options={employeeOptions}
-              placeholder="Unassigned"
-              icon={UserCheck}
-            />
+            <div className="flex flex-col gap-2">
+              {assignedTo.map((val, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <div className="flex-1">
+                    <CustomSelect
+                      value={val}
+                      onChange={v => { const u = [...assignedTo]; u[idx] = v; setAssignedTo(u); }}
+                      options={employeeOptions}
+                      placeholder="Unassigned"
+                      icon={UserCheck}
+                    />
+                  </div>
+                  {assignedTo.length > 1 && (
+                    <button type="button"
+                      onClick={() => setAssignedTo(assignedTo.filter((_, i) => i !== idx))}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-red-400 hover:text-red-600 bg-gray-50 dark:bg-[#1e1b16] border border-gray-200 dark:border-white/[0.09] cursor-pointer transition-all">
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button type="button"
+                onClick={() => setAssignedTo([...assignedTo, ''])}
+                className="self-start flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[12px] font-semibold cursor-pointer transition-all bg-gray-50 dark:bg-[#1e1b16] border border-dashed border-gray-300 dark:border-white/[0.15] text-gray-500 dark:text-gray-400 hover:border-[#e8b84b] hover:text-[#e8b84b]">
+                + Add another
+              </button>
+            </div>
           </Field>
 
           <Field label="Project budget (₹)">
@@ -298,7 +318,7 @@ export default function ProjectForm({ project, defaultClientId, onSuccess, onCan
           </p>
         )}
 
-        {/* Recurring toggle box */}
+        {/* Recurring toggle */}
         <div
           className="rounded-2xl p-4 transition-all"
           style={{

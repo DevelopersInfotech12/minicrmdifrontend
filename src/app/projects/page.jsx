@@ -39,7 +39,7 @@ export default function ProjectsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterStatus, setFilterStatus] = useState('Active');
   const [filterService, setFilterService] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const [filterRecurring, setFilterRecurring] = useState('');
@@ -88,10 +88,10 @@ export default function ProjectsPage() {
   const totalPages = Math.ceil(total / limit);
 
   const statusGradient = {
-  Active: 'linear-gradient(135deg,#6366f1,#4338ca)',
-  Completed: 'linear-gradient(135deg,#6366f1,#4338ca)',
-  'On Hold': 'linear-gradient(135deg,#6366f1,#4338ca)',
-};
+    Active: 'linear-gradient(135deg,#6366f1,#4338ca)',
+    Completed: 'linear-gradient(135deg,#6366f1,#4338ca)',
+    'On Hold': 'linear-gradient(135deg,#6366f1,#4338ca)',
+  };
 
   const selectCls = `
     px-4 py-2.5 rounded-xl text-sm font-medium min-w-[130px]
@@ -253,12 +253,18 @@ export default function ProjectsPage() {
                     </td>
 
                     {/* Priority */}
-                    <td className="px-5 py-4">
+                    <td className="px-1 py-4">
                       {p.priority ? (() => {
                         const cfg = PRIORITY_CFG[p.priority];
                         return (
-                          <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                            style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}>
+                          <span
+                            className="text-[11px] font-semibold px-4 py-0.5 rounded-full whitespace-nowrap"
+                            style={{
+                              background: cfg.bg,
+                              border: `1px solid ${cfg.border}`,
+                              color: cfg.color,
+                            }}
+                          >
                             {p.priority}
                           </span>
                         );

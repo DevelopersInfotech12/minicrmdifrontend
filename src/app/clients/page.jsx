@@ -138,7 +138,7 @@ export default function ClientsPage() {
       <div className="bg-gray-100 dark:bg-[#1c1917] border border-gray-200/80 dark:border-white/[0.07] rounded-xl overflow-hidden">
         {loading ? <TableSkeleton rows={6} /> : clients.length === 0 ? (
           <EmptyState icon={Users} title="No clients found" description="Add your first client to get started."
-            action={<button onClick={() => setShowCreate(true)} className="btn-gold inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm cursor-pointer"><Plus size={14} />Add Client</button>}
+            action={<button onClick={() => setShowCreate(true)} className=" bg-indigo-500 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm cursor-pointer text-white font-bold"><Plus size={14} />Add Client</button>}
           />
         ) : (
           <>

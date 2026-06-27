@@ -369,7 +369,7 @@ export default function DashboardPage() {
         </SectionCard>
 
         {/* Recent Projects */}
-        <SectionCard title="Recent Projects" href="/projects" icon={FolderKanban}>
+        <SectionCard title="Active Projects" href="/projects" icon={FolderKanban}>
           {loading ? (
             <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -382,9 +382,9 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          ) : d.recentProjects?.length ? (
+          ) : d.recentProjects?.filter(p => p.status === 'Active').length ? (
             <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
-              {d.recentProjects.map((p, i) => (
+              {d.recentProjects.filter(p => p.status === 'Active').map((p, i) => (
                 <Link key={i} href={`/projects/${p._id}`}
                   className="flex items-center gap-3 px-5 py-3 no-underline hover:bg-gray-100/80 dark:hover:bg-white/[0.02] transition-colors">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-[12px] text-white"
@@ -400,7 +400,7 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p className="text-[12px] text-gray-400 dark:text-gray-600 text-center py-10">No projects yet</p>
+            <p className="text-[12px] text-gray-400 dark:text-gray-600 text-center py-10">No active projects</p>
           )}
         </SectionCard>
 

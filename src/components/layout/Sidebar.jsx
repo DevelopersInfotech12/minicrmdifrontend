@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, FolderKanban, CreditCard, StickyNote, UserPlus, RefreshCw, Moon, Sun, Zap, LogOut, UserCircle, CalendarDays, Receipt, UserCheck, Banknote } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, CreditCard, StickyNote, UserPlus, RefreshCw, Moon, Sun, Zap, LogOut, UserCircle, CalendarDays, Receipt, UserCheck, Banknote, Code2 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { useEffect, useState } from 'react';
 import { authApi } from '@/lib/api';
@@ -17,7 +17,8 @@ const nav = [
   { href:'/notes',     label:'Notes',      icon:StickyNote },
   { href:'/calendar',  label:'Calendar',   icon:CalendarDays },
   { href:'/employees', label:'Employees',  icon:UserCheck },
-  { href:'/payroll',   label:'Payroll',    icon:Banknote },
+  { href:'/payroll',           label:'Payroll',          icon:Banknote },
+  { href:'/personal-projects', label:'My Projects',       icon:Code2 },
 ];
 
 export default function Sidebar() {
