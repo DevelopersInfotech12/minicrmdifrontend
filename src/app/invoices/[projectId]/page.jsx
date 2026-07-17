@@ -14,10 +14,10 @@ const STATUS_COLOR = { Paid: '#10b981', Partial: '#f59e0b', Overdue: '#ef4444', 
 export default function InvoicePrintPage() {
   const { projectId } = useParams();
   const router = useRouter();
-  const [project, setProject]     = useState(null);
-  const [client, setClient]       = useState(null);
+  const [project, setProject] = useState(null);
+  const [client, setClient] = useState(null);
   const [milestones, setMilestones] = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [loading, setLoading] = useState(true);
   const invoiceNo = `INV-${projectId.slice(-6).toUpperCase()}`;
   const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -34,7 +34,7 @@ export default function InvoicePrintPage() {
         setClient(cRes.data.data.client);
       }
     }).catch(() => { toast.error('Failed to load invoice'); router.push('/projects'); })
-    .finally(() => setLoading(false));
+      .finally(() => setLoading(false));
   }, [projectId]);
 
   if (loading) return (
@@ -43,8 +43,8 @@ export default function InvoicePrintPage() {
     </div>
   );
 
-  const totalAmount  = milestones.reduce((s, m) => s + m.amount, 0);
-  const totalPaid    = milestones.reduce((s, m) => s + m.paidAmount, 0);
+  const totalAmount = milestones.reduce((s, m) => s + m.amount, 0);
+  const totalPaid = milestones.reduce((s, m) => s + m.paidAmount, 0);
   const totalPending = totalAmount - totalPaid;
 
   return (
@@ -75,13 +75,13 @@ export default function InvoicePrintPage() {
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg font-black" style={{ background: 'linear-gradient(135deg,#6366f1,#4338ca)' }}>⚡</div>
                 <div>
-                  <p className="font-black text-xl text-slate-900">MiniCRM Agency</p>
+                  <p className="font-black text-xl text-slate-900">Cliento Agency</p>
                   <p className="text-xs text-slate-400">Your Digital Growth Partner</p>
                 </div>
               </div>
               <div className="text-xs text-slate-500 leading-relaxed mt-4">
                 <p>123 Agency Street, Mumbai</p>
-                <p>contact@minicrm.io · +91 98765 43210</p>
+                <p>contact@Cliento.io · +91 98765 43210</p>
                 <p>GST: 22AAAAA0000A1Z5</p>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function InvoicePrintPage() {
           {/* Footer */}
           <div className="border-t border-slate-100 pt-5 text-center">
             <p className="text-sm text-slate-400">Thank you for your business!</p>
-            <p className="text-xs text-slate-300 mt-1">For payment queries: contact@minicrm.io</p>
+            <p className="text-xs text-slate-300 mt-1">For payment queries: contact@Cliento.io</p>
           </div>
         </div>
       </div>

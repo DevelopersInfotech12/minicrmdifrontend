@@ -185,7 +185,7 @@ export default function LoginPage() {
                 letterSpacing: '0.05em',
                 margin: 0, lineHeight: 1,
               }}>
-                MiniCRM
+                Cliento
               </h1>
             </div>
             <p style={{ fontSize: 14, color: '#9a8878', margin: 0, fontFamily: "'DM Sans', sans-serif" }}>
@@ -283,7 +283,7 @@ export default function LoginPage() {
           </div>
 
           <p style={{ textAlign: 'center', fontSize: 12, color: '#c8b8a8', marginTop: 22, fontFamily: "'DM Sans', sans-serif" }}>
-            MiniCRM Agency Suite · Each account has its own isolated data
+            Cliento Agency Suite · Each account has its own isolated data
           </p>
         </div>
       </div>

@@ -22,7 +22,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await authApi.register({ name, email, password });
-      toast.success('Account created! Welcome to MiniCRM 🎉');
+      toast.success('Account created! Welcome to Cliento 🎉');
       window.location.href = '/dashboard';
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Registration failed');
@@ -199,7 +199,7 @@ export default function RegisterPage() {
                 letterSpacing: '0.05em',
                 margin: 0, lineHeight: 1,
               }}>
-                MiniCRM
+                Cliento
               </h1>
             </div>
             <p style={{ fontSize: 14, color: '#9a8878', margin: 0, fontFamily: "'DM Sans', sans-serif" }}>
@@ -346,14 +346,14 @@ export default function RegisterPage() {
 
             <p style={{ textAlign: 'center', fontSize: 13, color: '#9a8878', fontFamily: "'DM Sans', sans-serif", margin: 0 }}>
               Already have an account?{' '}
-              <Link href="/login" style={{ color: '#6366f1', fontWeight: 600, textDecoration: 'none',fontSize: 14, }}>
+              <Link href="/login" style={{ color: '#6366f1', fontWeight: 600, textDecoration: 'none', fontSize: 14, }}>
                 Sign in
               </Link>
             </p>
           </div>
 
           <p style={{ textAlign: 'center', fontSize: 12, color: '#c8b8a8', marginTop: 22, fontFamily: "'DM Sans', sans-serif" }}>
-            MiniCRM Agency Suite · Each account has its own isolated data
+            Cliento Agency Suite · Each account has its own isolated data
           </p>
         </div>
       </div>
